@@ -1,10 +1,14 @@
 #define MAX 10
-#define DEBUG
 
 #define TUNIT 150 // Shortest time frame
 #define BLINK (TUNIT * 20)  // Time light is on for 1
 #define BETWEEN (TUNIT * 2) // Time between bits
 #define PAUSE (TUNIT * 50)  // Time between numbers
+
+void setup(void);
+void loop(void);
+void shownumber(unsigned char*);
+void flash(unsigned short);
 
 
 void setup()
@@ -29,7 +33,7 @@ void setup()
 void loop()
 {
 	// Get random number
-	int number = random(MAX) + 1;
+	unsigned char number = random(MAX) + 1;
 
 	#ifdef DEBUG
 	Serial.print("Number = ");
@@ -40,25 +44,20 @@ void loop()
 
 	// Pause between numbers
 	delay(PAUSE);
-	showNumber(number);
+	showNumber(&number);
 }
 
-void showNumber(int n)
+void showNumber(unsigned char* n)
 {
-	int i = 8;	// A max of 8 bits or 255 in decimal
+	unsigned char l = 8;	// A max of 8 bits or 255 in decimal
 
 	// Wait for first 1
-	while (!(n >> i-- & 0x0001));	// n cannot be 0
+	while (!(*n >> l-- & 0x0001));	// n cannot be 0
 
-	// First 1
-	flash(BLINK);
-
-	// Delay between bits
-	delay(BETWEEN);
-
-	while (i >= 0)
+	// Show all bits in reverse (except MSB)
+	for (unsigned char i = 0; i <= l; ++i)
 	{
-		if(n >> i-- & 0x0001)
+		if(*n >> i & 0x0001)
 		{
 			// Long flash
 			flash(BLINK);
@@ -73,14 +72,18 @@ void showNumber(int n)
 		// Delay between bits
 		delay(BETWEEN);
 	}
+	
+	// Flash MSB (always 1)
+	flash(BLINK);
 
 	// End of number indicated by 2 short flashes
+	delay(TUNIT);
 	flash(TUNIT);
 	delay(TUNIT);
 	flash(TUNIT);
 }
 
-void flash(int delayTime)
+void flash(unsigned short delayTime)
 {
 	digitalWrite(LED_BUILTIN, HIGH);
 	delay(delayTime);

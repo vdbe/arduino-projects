@@ -1,3 +1,4 @@
+// # Defines
 #define UNIT 250
 #define DEBUG
 
@@ -7,15 +8,26 @@
 #define PAUSE (UNIT*7)
 #define END (UNIT*14)
 
+// # Functions
+void setup(void);
+void loop(void);
+void stringToMorse(const char*);
+unsigned char getIndex(const char *c);
+void lightOff(unsigned short delayTime);
+void dot(void);
+void dash(void);
+
+// # Global variables
 //                   {  'A',  'B',  'C',  'D',  'E',  'F',  'G',  'H',  'I',  'J',  'K',  'L',  'M',  'N',  'O',  'P',  'Q',  'R',  'S',  'T',  'U',  'V',  'W',  'X',  'Y',  'Z',  '0',  '1',  '2',  '3',  '4',  '5',  '6',  '7',  '8',  '9', }
-const char morse[] = { 0x42, 0x81, 0x85, 0x61, 0x20, 0x84, 0x63, 0x80, 0x40, 0x8e, 0x65, 0x82, 0x43, 0x41, 0x67, 0x86, 0x8b, 0x62, 0x60, 0x21, 0x64, 0x88, 0x42, 0x89, 0x8d, 0x83, 0xbf, 0xbe, 0xbc, 0xb8, 0xb0, 0xa0, 0xa1, 0xa3, 0xa7, 0xaf, };
+const unsigned char morse[] = { 0x42, 0x81, 0x85, 0x61, 0x20, 0x84, 0x63, 0x80, 0x40, 0x8e, 0x65, 0x82, 0x43, 0x41, 0x67, 0x86, 0x8b, 0x62, 0x60, 0x21, 0x64, 0x88, 0x42, 0x89, 0x8d, 0x83, 0xbf, 0xbe, 0xbc, 0xb8, 0xb0, 0xa0, 0xa1, 0xa3, 0xa7, 0xaf, };
+void (*fptr[2])(void) = { dot, dash };  // Function pointer for dot or dash
 
 #ifndef DEBUG
 // Message to be morsed
-char *SENTENCE = "SOS";
+const char *SENTENCE = (const char*)"SOS";
 #endif
 
-void setup() {
+void setup(void) {
 	#ifdef DEBUG
 	// Setup Serial
 	Serial.begin(9600);
@@ -27,7 +39,7 @@ void setup() {
 	pinMode(LED_BUILTIN, OUTPUT);
 }
 
-void loop()
+void loop(void)
 {
 	#ifdef DEBUG
 	String str;
@@ -52,16 +64,14 @@ void loop()
 	lightOff(END);
 }
 
-void stringToMorse(char* word)
+void stringToMorse(const char* word)
 {
-	void (*fptr[2])(void) = { dot, dash };	// Function pointer for dot or dash
-	int wordLen, morseLen;	// Length variables
-	char c;	// Stores the morse byte
-
+	unsigned char c; // Stores the morse byte
+	unsigned char wordLen, morseLen;  // Length variables
 	wordLen = strlen(word);
 
 	// Loop over each char in word
-	for (int i = 0; i < wordLen; ++i, ++word)
+	for (unsigned char i = 0; i < wordLen; ++i, ++word)
 	{
 		// If space lights off for PAUSE and go to the next char
 		if (*word == ' ')
@@ -89,17 +99,17 @@ void stringToMorse(char* word)
 		Serial.print(": ");
 		Serial.print(morseLen, BIN);
 		Serial.print(" ");
-		#endif DEBUG
+		#endif
 
 		// Loop over the last <morselen> bytes in reversed order 
-		for (int i = 0; i < morseLen; ++i)
+		for (unsigned char i = 0; i < morseLen; ++i)
 		{
 			#ifdef DEBUG
 			Serial.print(c >> i & 0x1, BIN);
 			#endif
 
 			// Call the correct function and wait
-			(*fptr[c >> i & 0x1])();	// (c >> i & 0x1) ? dash : dot 
+			(*fptr[c >> i & 0x1])();  // (c >> i & 0x1) ? dash() : dot() 
 			lightOff(WAIT);
 		}
 
@@ -109,7 +119,7 @@ void stringToMorse(char* word)
 	}
 }
 
-int getIndex(char *c)
+unsigned char getIndex(const char* c)
 {
 	if (*c >= 'A' && *c <= 'Z')
 		return *c - 'A';
@@ -120,19 +130,19 @@ int getIndex(char *c)
 	return *c - 22;
 }
 
-void lightOff(int delayTime)
+void lightOff(unsigned short delayTime)
 {
 	digitalWrite(LED_BUILTIN, LOW);
 	delay(delayTime);
 }
 
-void dot()
+void dot(void)
 {
 	digitalWrite(LED_BUILTIN, HIGH);
 	delay(SHORT);
 }
 
-void dash()
+void dash(void)
 {
 	digitalWrite(LED_BUILTIN, HIGH);
 	delay(LONG);
