@@ -1,12 +1,12 @@
 # Morse
-Prints a sentce using morscode, when sentence is fully send it starts over.
+Prints a sentence using morscode, when sentence is fully printed it starts over.
 
 ## charbyte
 ### Format
-* 8 bytes
+* 8 bits
 	* First 3: Sum of all dots and dashes
-	* Last 5: 1 for a dash 0 for a dot
-	* Read in reverse
+	* Last 5: 1 for a dash, 0 for a dot
+		* Read in reverse
 * Max of 5 dots/dashes when using a single byte
 
 ### Generate
