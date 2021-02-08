@@ -53,3 +53,20 @@ python3 helpers/gen-morsebytes.py
 | 7 | 101 | 00011 | 0xa3 |
 | 8 | 101 | 00111 | 0xa7 |
 | 9 | 101 | 01111 | 0xaf |
+
+## Improvements
+* Charbyte
+
+  Use the signal bit as msb followed by a 1 and then right zeropadded
+  Use this to trow away the zero pads and 1
+  ```arduino
+  unsigned char i = 0;
+  while(c >> i++ & 0x1);
+  ```
+  This will leave the next bit as the first signal to send
+  * This gives 7 bits for signals instead of 5
+    * You need 6 bits for punctuation
+* When adding punctuation change getIndex to getMorseByte
+
+	No need to put the extra chars in the array when you need to filter them with a switch statement just return an pointer to it.
+* Find a way to use index to acces bits instead of shifting and masking
