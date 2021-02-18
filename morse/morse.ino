@@ -1,6 +1,6 @@
 // # Defines
+#include <string.h>
 #define UNIT 250
-#define DEBUG
 
 #define SHORT UNIT
 #define LONG (UNIT*3)
@@ -12,7 +12,8 @@
 void setup(void);
 void loop(void);
 void stringToMorse(const char*);
-unsigned char getIndex(const char *c);
+//unsigned char getIndex(const char *c);
+const unsigned char* getMorseByte(const char *c);
 void lightOff(unsigned short delayTime);
 void dot(void);
 void dash(void);
@@ -67,11 +68,11 @@ void loop(void)
 void stringToMorse(const char* word)
 {
 	unsigned char c; // Stores the morse byte
-	unsigned char wordLen, morseLen;  // Length variables
+	unsigned char wordLen;//, morseLen;  // Length variables
 	wordLen = strlen(word);
 
 	// Loop over each char in word
-	for (unsigned char i = 0; i < wordLen; ++i, ++word)
+	for (unsigned char i = 0, j = 0; i < wordLen; ++i, ++word, j = 0)
 	{
 		// If space lights off for PAUSE and go to the next char
 		if (*word == ' ')
@@ -85,10 +86,10 @@ void stringToMorse(const char* word)
 		}
 
 		// Get the morse byte associated with the char 
-		c = morse[getIndex(word)];
+		c = *getMorseByte(word);
 
 		// Get the first 3 bits wich represents the sum of all dashes and dots
-		morseLen = c >> 5 & 0x7;
+		//morseLen = c >> 5 & 0x7;
 
 		#ifdef DEBUG
 		Serial.print(*word);
@@ -101,15 +102,16 @@ void stringToMorse(const char* word)
 		Serial.print(" ");
 		#endif
 
-		// Loop over the last <morselen> bytes in reversed order 
-		for (unsigned char i = 0; i < morseLen; ++i)
+		// Loop over the last <morselen> bytes in reversed order
+		while(c >> j++ & 0x1);
+		for (; j < 8; ++j)
 		{
 			#ifdef DEBUG
 			Serial.print(c >> i & 0x1, BIN);
 			#endif
 
 			// Call the correct function and wait
-			(*fptr[c >> i & 0x1])();  // (c >> i & 0x1) ? dash() : dot() 
+			(*fptr[c >> j & 0x1])();  // (c >> i & 0x1) ? dash() : dot() 
 			lightOff(WAIT);
 		}
 
@@ -119,6 +121,7 @@ void stringToMorse(const char* word)
 	}
 }
 
+/*
 unsigned char getIndex(const char* c)
 {
 	if (*c >= 'A' && *c <= 'Z')
@@ -128,6 +131,16 @@ unsigned char getIndex(const char* c)
 		return *c - 'a';
 
 	return *c - 22;
+}*/
+const unsigned char* getMorseByte(const char* c)
+{
+	if (*c >= 'A' && *c <= 'Z')
+		return morse + *c - 'A';
+
+	if (*c >= 'a' && *c <= 'z')
+		return morse + *c - 'a';
+
+	return morse + *c - 22;
 }
 
 void lightOff(unsigned short delayTime)
