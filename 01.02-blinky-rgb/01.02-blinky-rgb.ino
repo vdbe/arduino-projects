@@ -1,8 +1,10 @@
 /*
  * Programma met de 3 kleuren led
- * Aangesloten op 13, 12 en 11 
+ * Aangesloten op 13, 12 en 11
  * door: evdb
 */
+#define DEBUG
+
 #define RED_LED 13
 #define GREEN_LED 12
 #define BLUE_LED 11
@@ -31,9 +33,8 @@ void setup() {
 	Serial.println("01.02-blinky-rgb");
 	#endif
 
-	pinMode(RED_LED, OUTPUT);
-	pinMode(GREEN_LED, OUTPUT);
-	pinMode(BLUE_LED, OUTPUT);
+	for (unsigned char i = 0; i < 3; i++)
+		pinMode(ledPins[i], OUTPUT);
 
 	currentState = 0x0;
 
@@ -57,8 +58,8 @@ void loop() {
 		Serial.print(" ^ ");
 		Serial.print(sequence[i], BIN);
 		Serial.print(" = ");
-		Serial.println(currentState ^ sequence[i], BIN);
-		Serial.print("\tToggle: ");
+		Serial.print(currentState ^ sequence[i], BIN);
+		Serial.print("\t-> Toggle: ");
 		#endif
 
 		// Toggle the lights that need to be turned on/off,
@@ -74,17 +75,17 @@ void loop() {
 				Serial.print(!digitalRead(ledPins[j]));
 				Serial.print("), ");
 				#endif
-				digitalWrite(ledPins[j], !digitalRead(ledPins[j]));
+				digitalWrite(ledPins[j], !(currentState >> j & 0x1));
 			}
 		}
 		#ifdef DEBUG
-		Serial.print("\n");
+		Serial.println("");
 		#endif
 		currentState = sequence[i];
 		delay(DELAY);
 	}
 
 	#ifdef DEBUG
-	Serial.println("\nEnd loop");
+	Serial.println("End loop");
 	#endif
 }

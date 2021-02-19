@@ -3,7 +3,6 @@
  * 8 LED's aangesloten op 13 t.e.m. 6
  * door: vdbe
  */
-
 #define LED0 6
 #define LED1 7
 #define LED2 8
@@ -15,8 +14,12 @@
 
 #define DELAY 100
 
+void setup(void);
+void loop(void);
+void zetOpLeds(unsigned char);
+
 const unsigned char ledPins[] = { LED0, LED1, LED2, LED3, LED4, LED5, LED6, LED7 };
-const unsigned char sequence[] = { 0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40 };
+const unsigned char sequence[] = { 0b10000000, 0b01000000, 0b00100000, 0b00010000, 0b00001000, 0b00000100, 0b00000010, 0b00000001, 0b00000010, 0b00000100, 0b00001000, 0b00010000, 0b00100000, 0b01000000 };
 
 unsigned char currentState;
 
@@ -32,19 +35,17 @@ void setup()
 	for(unsigned char i = 0; i < 8; ++i)
 		pinMode(ledPins[i], OUTPUT);
 
-	currentState = 0x0;
+	currentState = 0b00000000;
 
 	#ifdef DEBUG
 	Serial.println("Setup complete");
 	#endif
-
 }
 
-void zetOpLeds(int waarde)
+void zetOpLeds(unsigned char waarde)
 {
-
 	#ifdef DEBUG
-	Serial.print("\t -> Toggle: ");
+	Serial.print("\t-> Toggle: ");
 	#endif
 	for (unsigned char i = 0; i < 8; ++i)
 	{
@@ -53,14 +54,14 @@ void zetOpLeds(int waarde)
 			#ifdef DEBUG
 			Serial.print(ledPins[i]);
 			Serial.print("(");
-			Serial.print(!digitalRead(ledPins[i]));
+			Serial.print(!(currentState >> i & 0x1));
 			Serial.print("), ");
 			#endif
-			digitalWrite(ledPins[i], !digitalRead(ledPins[i]));
+			digitalWrite(ledPins[i], !(currentState >> i & 0x1));
 		}
 	}
 	#ifdef DEBUG
-	Serial.print("\n");
+	Serial.println("");
 	#endif
 
 	currentState = waarde;
@@ -68,6 +69,9 @@ void zetOpLeds(int waarde)
 
 void loop()
 {
+	#ifdef DEBUG
+	Serial.println("Start loop");
+	#endif
 	for (int i = 0; i < 14; ++i)
 	{
 		#ifdef DEBUG
