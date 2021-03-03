@@ -3,6 +3,8 @@
  * Input ingesteld op pin 2 Led op pin 13
  * door: vdbe
  */
+#define NOINCLUDE
+ 
 #ifndef NOINCLUDE
 #include <ezButton.h>
 #endif

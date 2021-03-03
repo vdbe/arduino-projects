@@ -4,7 +4,7 @@
 
 const unsigned char ledPins[] = {RED_LED, GREEN_LED, BLUE_LED};
 
-char signalStr[4];
+char signalStr[3];
 unsigned char pin;
 
 void setup()
@@ -28,7 +28,7 @@ void loop()
 		return;
 	}
 
-	Serial.readBytesUntil('\n', signalStr, 4);
+	Serial.readBytesUntil('\n', signalStr, 3);
 
 	switch (signalStr[0])
 	{
