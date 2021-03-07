@@ -34,7 +34,6 @@ void setup()
 	Serial.println("Setup complete");
 	Serial.print("Max voltage: ");
 	Serial.print(MAXVOLTAGE, DEC);
-
 	#endif
 }
 
@@ -47,9 +46,9 @@ void loop()
 	val = analogRead(READPIN);
 
 	Serial.print("Analog: ");
-	Serial.print(val);
+	Serial.print(val, DEC);
 	Serial.print(", Voltage: ");
-	Serial.println(floatMap(val, MINANALOGEVALUE, MAXANALOGEVALUE, MINVOLTAGE, MAXVOLTAGE));
+	Serial.println(floatMap(val, MINANALOGEVALUE, MAXANALOGEVALUE, MINVOLTAGE, MAXVOLTAGE), DEC);
 }
 
 // https://www.arduino.cc/reference/en/language/functions/math/map/

@@ -1,5 +1,5 @@
 #define LEDPIN 11
-//#define DEBUG
+#define DEBUG
 
 const int interval = 5884;
 
