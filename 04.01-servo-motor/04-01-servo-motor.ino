@@ -43,7 +43,6 @@ void loop()
 		if (currentAngle == 0 || currentAngle == targetAngle)
 		{
 			// Servo reached target angle
-
 			targetAngle = state*ANGLE;
 
 			#ifdef DEBUG
@@ -54,7 +53,6 @@ void loop()
 		else
 		{
 			// Servo has not reached target angle and needs to be paused
-
 			targetAngle = currentAngle;
 
 			#ifdef DEBUG
