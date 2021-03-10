@@ -1,4 +1,4 @@
-#include <Servo.h>
+ #include <Servo.h>
 #include <ezButton.h>
 
 //#define DEBUG
@@ -6,6 +6,7 @@
 #define BUTTON 2
 #define SERVO 10
 
+#define DEBOUNCE 50
 #define ANGLE 180
 #define STEPSIZE 1	// WARNING: currentAngle is unsigned going below zero will jump to 255 (or lower) there is no check for this!!!
 
@@ -22,9 +23,10 @@ void setup()
 	Serial.begin(9600);
 	#endif
 
+	button.setDebounceTime(DEBOUNCE);
 	servo1.attach(SERVO);
 
-	state, currentAngle, targetAngle = 0;
+	state = currentAngle = targetAngle = 0;
 
 	servo1.write(state*ANGLE);
 
@@ -79,7 +81,8 @@ void loop()
 		#ifdef DEBUG
 		//Serial.print("Current angle ");
 		//Serial.println(currentAngle, DEC);
-		delay(10);
+		#else
+		delay(5);
 		#endif
 	}
 }
