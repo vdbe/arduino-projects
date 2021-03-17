@@ -1,4 +1,4 @@
- #include <Servo.h>
+#include <Servo.h>
 #include <ezButton.h>
 
 //#define DEBUG
@@ -42,7 +42,7 @@ void loop()
 	if (button.isPressed())
 	{
 		state = !state;
-		if (currentAngle == 0 || currentAngle == targetAngle)
+		if (currentAngle == targetAngle)
 		{
 			// Servo reached target angle
 			targetAngle = state*ANGLE;
@@ -79,8 +79,8 @@ void loop()
 		servo1.write(currentAngle);
 
 		#ifdef DEBUG
-		//Serial.print("Current angle ");
-		//Serial.println(currentAngle, DEC);
+		Serial.print("Current angle ");
+		Serial.println(currentAngle, DEC);
 		#else
 		delay(5);
 		#endif
