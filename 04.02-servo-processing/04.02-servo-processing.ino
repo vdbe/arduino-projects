@@ -15,5 +15,4 @@ void loop()
 	if (Serial.available() > 1)
 		servo1.write(Serial.readStringUntil('\n').toInt());
 
-	servo1.w
 }
