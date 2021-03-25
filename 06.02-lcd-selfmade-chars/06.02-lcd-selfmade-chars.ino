@@ -2,6 +2,7 @@
 #include "chars.h"
 
 #define CHAR 2
+#define DEBUG
 
 // No idea how you get to 0x27 but it works
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -96,7 +97,7 @@ void loadingBar(int progress)
 		{
 			lcd.write(byte(4));
 		}
-		if (p == 32)
+		if (p > 30)
 		{
 			lcd.write(byte(6));
 		}
