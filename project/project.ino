@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <LiquidCrystal_I2C.h>
 #include "Joystick.h"
+#include "Counter.h"
 
 #define VRxPin A1
 #define VRyPin A0
@@ -11,14 +12,17 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 int num = 5, newNum;
 bool mode = true;
 
+Counter counter;
+
 void setup()
 {
 	Serial.begin(9600);
 	joystick.attach(VRxPin, VRyPin, SWPin);
-
+	lcd.clear();
 	lcd.init();
+	counter.init(&lcd, 0, 0, 60, 50);
+	counter.draw();
 	lcd.backlight();
-	lcd.print(num);
 }
 
 void loop()
@@ -26,19 +30,6 @@ void loop()
 	joystick.loop();
 
 	mode ^= joystick.isPressed();
-
-	newNum = (num + joystick.getX(mode));
-	if (newNum == num)
-		return; // No screen update needed
-
-	lcd.setCursor(0, 0);
-
-	num = newNum % 60;
-	if (num < 0)
-	{
-		num = 59;
-	}
-
-	lcd.print(num);
-	lcd.print(" ");
+	
+	counter.update(joystick.getX(mode), true);
 }
