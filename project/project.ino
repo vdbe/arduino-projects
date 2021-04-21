@@ -2,6 +2,7 @@
 #include <LiquidCrystal_I2C.h>
 #include "Joystick.h"
 #include "Clock.h"
+#include "Chars.h"
 
 #define VRxPin A1
 #define VRyPin A0
@@ -26,9 +27,16 @@ void setup()
 	joystick.attach(VRxPin, VRyPin, SWPin);
 	lcd.clear();
 	lcd.init();
-	time1.init(&lcd, 0, 0);
+	
+	load_arrows(&lcd);
 
-	time2.init(&lcd, 0, 7);
+	lcd.setCursor(0, 0);
+	lcd.write(byte(0));
+	time1.init(&lcd, 0, 1);
+
+	lcd.setCursor(7, 0);
+	lcd.write(byte(1));
+	time2.init(&lcd, 0, 8);
 	lcd.backlight();
 
 	fields[0] = &time1.hours;
