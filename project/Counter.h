@@ -23,6 +23,7 @@ public:
 	void draw(void);
 	void init(LiquidCrystal_I2C *, uint8_t, uint8_t, int16_t, int16_t);
 	void update(int8_t, bool);
+	uint8_t underline(void);
 
 private:
 	CounterLocation counterLocation;
@@ -30,13 +31,15 @@ private:
 	int16_t value;
 	LiquidCrystal_I2C *lcd;
 	uint8_t getCounterSize(int16_t);
+	uint8_t llen;
+	uint8_t underlined;
 };
 
 // Public funtions
 
 Counter::Counter(void)
 {
-
+	// Do nothing
 }
 
 Counter::Counter(LiquidCrystal_I2C *lcd, uint8_t row, uint8_t column, int16_t max, int16_t value)
@@ -46,11 +49,21 @@ Counter::Counter(LiquidCrystal_I2C *lcd, uint8_t row, uint8_t column, int16_t ma
 
 void Counter::draw(void)
 {
+	uint8_t len;
+	len = this->getCounterSize(this->value);
+
+	// Set cursor to start of counter
 	this->lcd->setCursor(this->counterLocation.column, this->counterLocation.row);
+
+	// Pad left with zeros
+	for(uint8_t i = len; i < this->counterLocation.size; i++) {
+		this->lcd->print("0");
+	}
+
+	// Write the value
 	this->lcd->print(this->value);
 
-	// TODO: Only needed padding
-	this->lcd->print(" ");
+	//this->llen = len;
 }
 
 void Counter::update(int8_t value, bool relative)
@@ -76,6 +89,22 @@ void Counter::init(LiquidCrystal_I2C *lcd, uint8_t row, uint8_t column, int16_t 
 	this->counterLocation.size = this->getCounterSize(max);
 	this->max = max;
 	this->value = value;
+	this->llen = 0;
+	this->underlined = 0;
+}
+
+uint8_t Counter::underline(void) {
+	char ch;
+
+	ch = this->underlined ? ' ' : '_';
+	this->lcd->setCursor(this->counterLocation.column, this->counterLocation.row+1);
+
+	for (uint8_t i = 0; i < this->counterLocation.size; i++)
+	{
+		lcd->print(ch);
+	}
+
+	return this->underlined = !this->underlined;
 }
 
 // Private functions
