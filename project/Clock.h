@@ -8,14 +8,14 @@
 class Clock
 {
 public:
-	clock(void);
+	Clock(void);
 	void init(LiquidCrystal_I2C *, uint8_t, uint8_t);
 	Counter hours, minutes;
 
 private:
 };
 
-Clock::clock(void) {
+Clock::Clock(void) {
 	// Do nothing
 }
 

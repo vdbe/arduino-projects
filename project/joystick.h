@@ -21,6 +21,30 @@ union JoystickState
 	byte raw;
 };
 
+union JoystickAction
+{
+	byte raw;
+	struct
+	{
+		byte north : 1;
+		byte south : 1;
+		byte east : 1;
+		byte west : 1;
+		byte padding: 4;
+	} repeat;
+	struct
+	{
+		byte padding: 4;
+		byte north : 1;
+		byte south : 1;
+		byte east : 1;
+		byte west : 1;
+	} hold;
+};
+
+
+
+
 class Joystick
 {
 public:
@@ -29,18 +53,20 @@ public:
 	void attach(uint8_t, uint8_t, uint8_t);
 	JoystickState getState(void);
 	bool isPressed(void);
-	void loop(void);
+	bool loop(void);
 	int8_t getX(bool);
 	int8_t getY(bool);
+	JoystickAction getAction(void);
 
 private:
 	Button button;
 	uint8_t VRxPin, VRyPin, SWPin, debounceDelay;
 	JoystickState lastJoystickState, joystickState;
-	uint32_t lastNeutralTime;
+	uint32_t lastNeutralTime, lastLoopTime;
 	uint16_t repeatDelay, minRepeatDelay, defaultRepeatDelay;
+	JoystickAction joystickAction;
 
-	int8_t getDir(bool, bool, bool);
+	void update_action();
 };
 
 // Public funtions
@@ -68,6 +94,8 @@ void Joystick::attach(uint8_t VRxPin, uint8_t VRyPin, uint8_t SWPin)
 
 	this->defaultRepeatDelay = this->repeatDelay = 500;
 	this->minRepeatDelay = 200;
+	
+	this->joystickState.raw = 0;
 }
 
 JoystickState Joystick::getState(void)
@@ -80,12 +108,12 @@ bool Joystick::isPressed(void)
 	return this->button.isPressed();
 }
 
-void Joystick::loop()
+bool Joystick::loop()
 {
 	int read;
 	bool dir;
 	this->lastJoystickState = this->joystickState;
-
+	
 	// TODO: Compress to function called once per axis
 	// Set directions
 	read = analogRead(this->VRyPin);
@@ -123,47 +151,75 @@ void Joystick::loop()
 	}
 
 	this->button.loop();
+
+	this->lastLoopTime = millis();
+
+	this->update_action();
+	
+	return this->joystickState.raw != this->lastJoystickState.raw;
 }
 
 int8_t Joystick::getX(bool hold)
 {
-	return this->getDir(joystickState.north, joystickState.south, hold);
+	uint8_t input;
+	
+	if (hold){
+		input = this->joystickAction.hold.padding & 0b11;
+	} else {
+		input = this->joystickAction.repeat.padding & 0b11;
+	}
+	if (input) {
+		return input == 1 ? 1 : -1;
+	}
+	
+	return 0;
 }
 
 int8_t Joystick::getY(bool hold)
 {
-	return this->getDir(joystickState.east, joystickState.west, hold);
+	uint8_t input;
+	
+	if (hold){
+		input = (this->joystickAction.hold.padding >> 2) & 0b11;
+	} else {
+		input = (this->joystickAction.repeat.padding >> 2) & 0b11;
+	}
+
+	if (input) {
+		return input == 1 ? 1 : -1;
+	}
+	
+	return 0;
+}
+
+JoystickAction Joystick::getAction(void)
+{
+	return this->joystickAction;
 }
 
 // Private Functions
 
-int8_t Joystick::getDir(bool positive, bool negative, bool hold)
+void Joystick::update_action()
 {
-	uint8_t raw = joystickState.raw & 0b1111;
-
-	uint32_t time;
-
-	if (hold && (time = millis()) && raw && (time - this->lastNeutralTime) > this->repeatDelay)
-	{
-		if (this->repeatDelay > this->minRepeatDelay)
-		{
+	byte action = 0;
+	uint8_t raw = this->joystickState.raw & 0b1111;
+	
+	// Repeat
+	if((this->lastLoopTime - this->lastNeutralTime) > this->repeatDelay) {
+		// Update Repeat delay
+		if (this->repeatDelay > this->minRepeatDelay) {
 			this->repeatDelay -= (this->repeatDelay - this->minRepeatDelay) >> 2;
 		}
 
-		this->lastNeutralTime = time;
-	}
-	else if (!(raw && !(lastJoystickState.raw & 0b1111)))
-	{
-		return 0;
+		this->lastNeutralTime = this->lastLoopTime;
+		action = raw;
 	}
 
-	if (positive)
-	{
-		return 1;
+	// Single step
+	if (raw && !(this->lastJoystickState.raw & 0b1111)) {
+		action |= (raw << 4);
 	}
-	else if (negative) // NOTE: Check not needed
-	{
-		return -1;
-	}
+	
+	this->joystickAction.raw = action;
 }
 #endif

@@ -118,6 +118,9 @@ uint8_t Counter::getCounterSize(int16_t max)
 			return i;
 		}
 	}
+	
+	// Should never be reached
+	return -1;
 }
 
 #endif

@@ -17,9 +17,13 @@ bool mode = true;
 Clock time1;
 Clock time2;
 
-Counter * fields[4];
+Counter *fields[4];
 int8_t fieldIdx;
+JoystickAction joystickAction;
 
+int b = 0;
+int c = 0;
+int max = 0;
 
 void setup()
 {
@@ -27,7 +31,7 @@ void setup()
 	joystick.attach(VRxPin, VRyPin, SWPin);
 	lcd.clear();
 	lcd.init();
-	
+
 	load_arrows(&lcd);
 
 	lcd.setCursor(0, 0);
@@ -41,8 +45,7 @@ void setup()
 
 	fields[0] = &time1.hours;
 	fields[1] = &time1.minutes;
-	
-	
+
 	fields[2] = &time2.hours;
 	fields[3] = &time2.minutes;
 
@@ -54,16 +57,21 @@ void loop()
 {
 	joystick.loop();
 
+	joystickAction = joystick.getAction();
+
 	fields[fieldIdx]->update(joystick.getX(mode), true);
 
 	int8_t b = joystick.getY(false);
-	if(b) {
+	if (b)
+	{
 		fields[fieldIdx]->underline();
 		fieldIdx = (fieldIdx + b) % 4;
-		if(fieldIdx < 0) {
+		Serial.println(fieldIdx, DEC);
+		if (fieldIdx < 0)
+		{
 			fieldIdx = 3;
 		}
 		fields[fieldIdx]->underline();
 	}
-
+	
 }
