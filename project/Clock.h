@@ -9,7 +9,8 @@ class Clock
 {
 public:
 	Clock(void);
-	void init(LiquidCrystal_I2C *, uint8_t, uint8_t);
+	void init(LiquidCrystal_I2C *, uint8_t, uint8_t, char leadingChar);
+	void redraw(void);
 	Counter hours, minutes;
 
 private:
@@ -19,17 +20,17 @@ Clock::Clock(void) {
 	// Do nothing
 }
 
-void Clock::init(LiquidCrystal_I2C *lcd, uint8_t row, uint8_t column)
+void Clock::init(LiquidCrystal_I2C *lcd, uint8_t row, uint8_t column, char leadingChar)
 {
-	this->hours.init(lcd, row, column, 24, 0);
+	this->hours.init(lcd, row, column, 24, 0, leadingChar);
 
-	lcd->setCursor(column+2, row);
-	lcd->print(":");
+	this->minutes.init(lcd, row, column+ 2 + (leadingChar != 0), 60, 0, ':');
+}
 
-	this->minutes.init(lcd, row, column+3, 60, 0);
-
-	this->hours.draw();
-	this->minutes.draw();
+void Clock::redraw(void)
+{
+	this->hours.redraw();
+	this->minutes.redraw();
 }
 
 #endif

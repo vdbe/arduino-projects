@@ -159,15 +159,14 @@ bool Joystick::loop()
 	return this->joystickState.raw != this->lastJoystickState.raw;
 }
 
-int8_t Joystick::getX(bool hold)
+int8_t Joystick::getY(bool hold)
 {
-	uint8_t input;
+	uint8_t input = this->joystickAction.repeat.padding & 0b11;
 	
 	if (hold){
-		input = this->joystickAction.hold.padding & 0b11;
-	} else {
-		input = this->joystickAction.repeat.padding & 0b11;
+		input |= this->joystickAction.hold.padding & 0b11;
 	}
+
 	if (input) {
 		return input == 1 ? 1 : -1;
 	}
@@ -175,14 +174,12 @@ int8_t Joystick::getX(bool hold)
 	return 0;
 }
 
-int8_t Joystick::getY(bool hold)
+int8_t Joystick::getX(bool hold)
 {
-	uint8_t input;
+	uint8_t input = (this->joystickAction.repeat.padding >> 2) & 0b11;
 	
 	if (hold){
-		input = (this->joystickAction.hold.padding >> 2) & 0b11;
-	} else {
-		input = (this->joystickAction.repeat.padding >> 2) & 0b11;
+		input |= (this->joystickAction.hold.padding >> 2) & 0b11;
 	}
 
 	if (input) {

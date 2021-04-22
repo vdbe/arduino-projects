@@ -22,26 +22,19 @@ int8_t fieldIdx;
 JoystickAction joystickAction;
 
 int b = 0;
-int c = 0;
-int max = 0;
 
 void setup()
 {
 	Serial.begin(9600);
+
 	joystick.attach(VRxPin, VRyPin, SWPin);
+
 	lcd.clear();
 	lcd.init();
 
-	load_arrows(&lcd);
+	time1.init(&lcd, 0, 0, byte(1));
 
-	lcd.setCursor(0, 0);
-	lcd.write(byte(0));
-	time1.init(&lcd, 0, 1);
-
-	lcd.setCursor(7, 0);
-	lcd.write(byte(1));
-	time2.init(&lcd, 0, 8);
-	lcd.backlight();
+	time2.init(&lcd, 0, 7, byte(2));
 
 	fields[0] = &time1.hours;
 	fields[1] = &time1.minutes;
@@ -50,7 +43,12 @@ void setup()
 	fields[3] = &time2.minutes;
 
 	fieldIdx = 0;
-	fields[fieldIdx]->underline();
+
+	time1.redraw();
+	time2.redraw();
+	lcd.backlight();
+
+	fields[fieldIdx]->underline(true);
 }
 
 void loop()
@@ -59,19 +57,21 @@ void loop()
 
 	joystickAction = joystick.getAction();
 
-	fields[fieldIdx]->update(joystick.getX(mode), true);
+	fields[fieldIdx]->action(joystick.getY(mode), false);
 
-	int8_t b = joystick.getY(false);
+	int8_t b = joystick.getX(false);
 	if (b)
 	{
-		fields[fieldIdx]->underline();
+		// Not Needed since the MINDRAWTIME is commented out in Counter.draw
+		//fields[fieldIdx]->draw(true);
+
+		fields[fieldIdx]->underline(false);
 		fieldIdx = (fieldIdx + b) % 4;
-		Serial.println(fieldIdx, DEC);
 		if (fieldIdx < 0)
 		{
 			fieldIdx = 3;
 		}
-		fields[fieldIdx]->underline();
+		fields[fieldIdx]->underline(true);
 	}
 	
 }
