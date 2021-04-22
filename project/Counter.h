@@ -135,7 +135,7 @@ void Counter::underline(bool underline) {
 		return;
 	}
 
-	ch = underline ? '_' : ' ';
+	ch = underline ? byte(0) : ' ';
 	this->lcd->setCursor(this->counterLocation.column, this->counterLocation.row+1);
 
 	for (uint8_t i = 0; i < this->counterLocation.size; i++)

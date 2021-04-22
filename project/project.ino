@@ -31,6 +31,8 @@ void setup()
 
 	lcd.clear();
 	lcd.init();
+	
+	load_chars(&lcd);
 
 	time1.init(&lcd, 0, 0, byte(1));
 
