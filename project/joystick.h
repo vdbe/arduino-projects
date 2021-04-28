@@ -163,7 +163,7 @@ int8_t Joystick::getY(bool hold)
 {
 	uint8_t input = this->joystickAction.repeat.padding & 0b11;
 	
-	if (hold){
+	if (hold) {
 		input |= this->joystickAction.hold.padding & 0b11;
 	}
 

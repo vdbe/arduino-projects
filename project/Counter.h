@@ -5,6 +5,7 @@
 
 #include <Arduino.h>
 #include <LiquidCrystal_I2C.h>
+#include "Field.h"
 
 union CounterLocation
 {
@@ -17,7 +18,7 @@ union CounterLocation
 	byte raw;
 };
 
-class Counter
+class Counter: public Field
 {
 public:
 	Counter(void);
