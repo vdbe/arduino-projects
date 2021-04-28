@@ -19,9 +19,9 @@ public:
 	int16_t idx;
 
 private:
-	// TODO: Make a field object
+	// TODO: Use Vec
 	Field *fields[15];
-	uint8_t length = 0;
+	uint8_t length;
 };
 
 Scene::Scene(void) {
@@ -30,6 +30,7 @@ Scene::Scene(void) {
 
 void Scene::setup(void) {
 	this->idx = 0;
+	this->length = 0;
 
 	this->underline(true);
 	this->redraw();
@@ -73,6 +74,8 @@ void Scene::updateIdx(int8_t nidx, bool relative)
 	} else {
 		this->idx = nidx;
 	}
+	
+	this->idx %= this->length;
 
 	if (this->idx < 0)
 	{
