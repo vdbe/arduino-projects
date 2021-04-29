@@ -101,4 +101,5 @@ void Button::setDebounceTime(uint8_t time)
 {
 	this->debounceTime = time;
 }
+
 #endif

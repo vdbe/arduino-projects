@@ -5,18 +5,21 @@
 #include <LiquidCrystal_I2C.h>
 #include "Counter.h"
 
+// Just a wrapper arround `Counter`
 class Clock
 {
 public:
+	Counter hours, minutes;
+
 	Clock(void);
 	void init(LiquidCrystal_I2C *, uint8_t, uint8_t, char leadingChar);
 	void redraw(void);
-	Counter hours, minutes;
 
 private:
 };
 
-Clock::Clock(void) {
+Clock::Clock(void)
+{
 	// Do nothing
 }
 
@@ -24,7 +27,7 @@ void Clock::init(LiquidCrystal_I2C *lcd, uint8_t row, uint8_t column, char leadi
 {
 	this->hours.init(lcd, row, column, 24, 0, leadingChar);
 
-	this->minutes.init(lcd, row, column+ 2 + (leadingChar != 0), 60, 0, ':');
+	this->minutes.init(lcd, row, column + 2 + (leadingChar != 0), 60, 0, ':');
 }
 
 void Clock::redraw(void)

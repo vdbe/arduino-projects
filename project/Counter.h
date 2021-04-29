@@ -18,7 +18,7 @@ union CounterLocation
 	byte raw;
 };
 
-class Counter: public Field
+class Counter : public Field
 {
 public:
 	Counter(void);
@@ -29,17 +29,20 @@ public:
 	void init(LiquidCrystal_I2C *, uint8_t, uint8_t, int16_t, int16_t, char leadingChar);
 	void update(int8_t, bool);
 	void underline(bool);
-	
+
+	void save(void);
+	void reset(void);
+
 private:
 	CounterLocation counterLocation;
 	int16_t max;
-	int16_t value;
+	int16_t value, saved_value;
 	LiquidCrystal_I2C *lcd;
 	uint8_t getCounterSize(int16_t);
 	uint8_t llen;
 	bool underlined, needDraw;
 	char leadingChar;
-	
+
 	uint32_t lastDrawn;
 };
 
@@ -68,9 +71,27 @@ void Counter::init(LiquidCrystal_I2C *lcd, uint8_t row, uint8_t column, int16_t 
 	this->underlined = false;
 }
 
-void Counter::action(int8_t change, bool _click)
+void Counter::action(int8_t change, bool click)
 {
-	this->update(change, true);
+	if (click)
+	{
+		this->reset();
+	}
+	else
+	{
+		this->update(change, true);
+	}
+}
+
+void Counter::save(void)
+{
+	this->saved_value = this->value;
+}
+
+void Counter::reset(void)
+{
+	this->value = this->saved_value;
+	this->draw(true);
 }
 
 void Counter::draw(bool _force)
@@ -83,13 +104,15 @@ void Counter::draw(bool _force)
 	*/
 
 	uint8_t len;
-	len = this->getCounterSize(this->value);
+	len = this->getCounterSize(this->value); // Prbly not worth calculating every time
 
 	// Set cursor to start of counter
 	this->lcd->setCursor(this->counterLocation.column, this->counterLocation.row);
 
 	// Pad left with zeros
-	for(uint8_t i = len; i < this->counterLocation.size; i++) {
+	// TODO: Find a way to write all '0' at once instead of a loop
+	for (uint8_t i = len; i < this->counterLocation.size; i++)
+	{
 		this->lcd->print("0");
 	}
 
@@ -99,28 +122,32 @@ void Counter::draw(bool _force)
 	//this->llen = len
 }
 
-void Counter::redraw() {
-	this->lcd->setCursor(this->counterLocation.column + (this->leadingChar == 0 ? 0 : -1), this->counterLocation.row);
+void Counter::redraw()
+{
+	this->lcd->setCursor(this->counterLocation.column + (this->leadingChar == 0 ? 0 : -1),
+						 this->counterLocation.row);
 	this->underlined = !this->underlined;
 
-	if (this->leadingChar) {
+	if (this->leadingChar)
+	{
 		this->lcd->print(this->leadingChar);
 	}
-	
+
 	this->draw(true);
-	
+
 	this->underline(!this->underlined);
 }
 
 void Counter::update(int8_t value, bool relative)
 {
-	if(relative && !value)
+	if (!value && relative)
 	{
 		return;
 	}
-	
+
 	this->value = (relative ? this->value + value : value) % this->max;
-	if(this->value < 0)
+	// Why does -1 % 4 not equal 3
+	if (this->value < 0)
 	{
 		this->value += this->max;
 	}
@@ -128,37 +155,38 @@ void Counter::update(int8_t value, bool relative)
 	this->draw(false);
 }
 
-void Counter::underline(bool underline) {
-	char ch;
-
-	if(underline == this->underlined) {
+void Counter::underline(bool underline)
+{
+	if (underline == this->underlined)
+	{
 		// Already in correct state
 		return;
 	}
 
-	ch = underline ? byte(0) : ' ';
-	this->lcd->setCursor(this->counterLocation.column, this->counterLocation.row+1);
+	this->lcd->setCursor(this->counterLocation.column, this->counterLocation.row + 1);
 
-	for (uint8_t i = 0; i < this->counterLocation.size; i++)
+	for (uint8_t i = 0, ch = underline ? byte(0) : ' '; i < this->counterLocation.size; i++)
 	{
 		lcd->print(ch);
 	}
-	
+
 	this->underlined = underline;
 }
 
 // Private functions
 uint8_t Counter::getCounterSize(int16_t max)
 {
-	// TODO: check what is faster this or log
+	// TODO: Check what is faster this or log
 	for (uint8_t i = 1; i < 8; i++)
 	{
+		// NOTE: pow takes up 6% of program storage space
+		// TODO: write smaller pow if possible
 		if (max < (pow(10, i)))
 		{
 			return i;
 		}
 	}
-	
+
 	// Should never be reached
 	return -1;
 }

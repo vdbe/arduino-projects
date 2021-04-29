@@ -20,35 +20,40 @@ Scene scene;
 
 void setup()
 {
-	Serial.begin(9600);
+	Serial.begin(9600); // DEBUG
 
 	joystick.attach(VRxPin, VRyPin, SWPin);
 
-	lcd.clear();
+	// Reset lcd
+	lcd.clear(); // No ide if clear and init are both needed
 	lcd.init();
-	
+
+	// Load custom chars to lcd
 	load_chars(&lcd);
 
+	// Create both alarms
 	time1.init(&lcd, 0, 0, byte(1));
-
 	time2.init(&lcd, 0, 7, byte(2));
-	
+
+	// Add fields of alarms to scene
 	scene.add(&time1.hours);
 	scene.add(&time1.minutes);
 
 	scene.add(&time2.hours);
 	scene.add(&time2.minutes);
-	
+
+	// Underline the current field
 	scene.underline(true);
-	
-	scene.redraw();
-	
-	lcd.backlight();
+
+	// Setup the scene (redraw, underline)
+	scene.setup();
 }
 
 void loop()
 {
+	// Update joystick values
 	joystick.loop();
 
+	// Hand events over to the active scene
 	scene.action(joystick.getX(false), joystick.getY(true), false);
 }
