@@ -13,6 +13,8 @@ public:
 	void draw(bool);
 	// Redraw every field in the scene
 	void redraw(void);
+	// Remove all chars from the lcd
+	void clear(void);
 	// Add a new field to the scene
 	void add(Field *);
 	// Handle action
@@ -34,14 +36,12 @@ private:
 
 Scene::Scene(void)
 {
-	// Do nothing
+	this->length = 0;
+	this->idx = 0;
 }
 
 void Scene::setup(void)
 {
-	this->idx = 0;
-	this->length = 0;
-
 	this->underline(true); // Schould just set the underline bool instead of also drawing it, now its drawn by underline() and redraw()
 	this->redraw();
 }
@@ -77,6 +77,15 @@ void Scene::redraw()
 	for (uint8_t i = 0; i < this->length; i++)
 	{
 		this->fields[i]->redraw();
+	}
+}
+
+void Scene::clear()
+{
+	Serial.println("Scene::clear()"); // DEBUG
+	for (uint8_t i = 0; i < this->length; i++)
+	{
+		this->fields[i]->clear();
 	}
 }
 

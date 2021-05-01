@@ -11,6 +11,8 @@ public:
 	virtual void draw(bool);
 	// Redraw everything of this field
 	virtual void redraw(void);
+	// Clear the lcd
+	virtual void clear(void);
 	// Handle action (up/down, click)
 	virtual void action(int8_t, bool);
 	// Underline or remove underline from field

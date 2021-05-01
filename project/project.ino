@@ -15,8 +15,11 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 Clock time1;
 Clock time2;
+Clock time3;
 
 Scene scene;
+Scene scene2;
+Scene *scenes[2];
 
 void setup()
 {
@@ -25,7 +28,7 @@ void setup()
 	joystick.attach(VRxPin, VRyPin, SWPin);
 
 	// Reset lcd
-	lcd.clear(); // No ide if clear and init are both needed
+	lcd.clear(); // No idea if clear and init are both needed
 	lcd.init();
 
 	// Load custom chars to lcd
@@ -42,18 +45,43 @@ void setup()
 	scene.add(&time2.hours);
 	scene.add(&time2.minutes);
 
-	// Underline the current field
-	scene.underline(true);
-
 	// Setup the scene (redraw, underline)
 	scene.setup();
+
+	lcd.backlight();
+	scenes[0] = &scene;
+
+	time3.init(&lcd, 0, 0, 'X');
+
+	scene2.add(&time3.hours);
+	scene2.add(&time3.minutes);
+	scenes[1] = &scene2;
 }
 
 void loop()
 {
+	static uint8_t s = 0;
+
 	// Update joystick values
 	joystick.loop();
 
+	if (joystick.isPressed())
+	{
+		Serial.print("Clear scene: "); // DEBUG
+		Serial.println(s, DEC);		   // DEBUG
+
+		scenes[s]->clear();
+
+		s = !s; // Toggle s
+		scenes[s]->setup();
+
+		Serial.print("Redraw scene: "); // DEBUG
+		Serial.println(s, DEC);			// DEBUG
+		Serial.println("");				// DEBUG
+
+		return;
+	}
+
 	// Hand events over to the active scene
-	scene.action(joystick.getX(false), joystick.getY(true), false);
+	scenes[s]->action(joystick.getX(false), joystick.getY(true), joystick.isPressed());
 }
