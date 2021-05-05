@@ -51,8 +51,8 @@ void Scene::setup(void)
 	{
 		this->pre_setup_callback();
 	}
-	this->underline(true); // Schould just set the underline bool instead of also drawing it, now its drawn by underline() and redraw()
 	this->redraw();
+	this->underline(true);
 }
 
 void Scene::add(Field *field)
@@ -94,6 +94,7 @@ void Scene::redraw()
 
 void Scene::clear()
 {
+	this->fields[this->idx]->underline(false);
 	for (uint8_t i = 0; i < this->length; i++)
 	{
 		this->fields[i]->clear();

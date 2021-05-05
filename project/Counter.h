@@ -119,7 +119,6 @@ void Counter::redraw()
 {
 	this->lcd->setCursor(this->location.column + (this->leadingChar == 0 ? 0 : -1),
 						 this->location.row);
-	this->underlined = !this->underlined;
 
 	if (this->leadingChar)
 	{
@@ -127,8 +126,6 @@ void Counter::redraw()
 	}
 
 	this->draw(true);
-
-	this->underline(!this->underlined);
 }
 
 void Counter::clear()

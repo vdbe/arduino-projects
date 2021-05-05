@@ -17,7 +17,7 @@ public:
 	// Handle action (up/down, click)
 	virtual uint8_t action(int8_t, bool);
 	// Underline or remove underline from field
-	virtual void underline(bool);
+	virtual void underline(bool); // TODO: Make this not virtual
 	// Save Field
 	virtual void save(void);
 	// Reset field to last save

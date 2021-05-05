@@ -73,19 +73,13 @@ void SceneSwitcher::clear()
 
 void SceneSwitcher::redraw()
 {
-
 	this->lcd->setCursor(this->location.column, this->location.row);
 
-	this->underlined = !this->underlined;
-
 	this->lcd->print(this->symbol);
-
-	this->underline(!this->underlined);
 }
 
 void SceneSwitcher::underline(bool underline)
 {
-
 	if (underline == this->underlined)
 	{
 		// Already in correct state
