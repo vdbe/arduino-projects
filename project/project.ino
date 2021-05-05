@@ -18,7 +18,7 @@ Clock time1;
 Clock time2;
 Clock time3;
 
-SceneSwitcher sceneSwitcher(15);
+SceneSwitcher sceneSwitcher(&lcd, 15);
 
 Scene scene;
 Scene scene2;
@@ -29,6 +29,10 @@ uint8_t s;
 void setup()
 {
 	Serial.begin(9600); // DEBUG
+	Serial.println(""); // DEBUG
+	Serial.println(""); // DEBUG
+	Serial.println("-------------------------------------"); // DEBUG
+	Serial.println(1, DEC); // DEBUG
 
 	joystick.attach(VRxPin, VRyPin, SWPin);
 
@@ -45,29 +49,49 @@ void setup()
 
 	time3.init(&lcd, 0, 0, 'X');
 
+	Serial.println(2, DEC); // DEBUG
+
 	// Add fields of alarms to scenes
 	scene.add(&time1.hours);
 	scene.add(&time1.minutes);
+	
+	Serial.println(3, DEC); // DEBUG
 
 	scene.add(&time2.hours);
 	scene.add(&time2.minutes);
 	
+	Serial.println(4, DEC); // DEBUG
+	
 	scene.add(&sceneSwitcher);
+
+	Serial.println(5, DEC); // DEBUG
 
 	scene2.add(&time3.hours);
 	scene2.add(&time3.minutes);
 
+	Serial.println(6, DEC); // DEBUG
+
 	scene2.add(&sceneSwitcher);
+
+	Serial.println(7, DEC); // DEBUG
 	
 	// Add scene object to scenes array
 	scenes[0] = &scene;
 	scenes[1] = &scene2;
 
+	Serial.println(8, DEC); // DEBUG
+
 	// Setup the scene (redraw, underline)
 	s = 0;
-	scenes[s]->setup();
+	//scenes[s]->setup();
+	scene.setup();
+
+	Serial.println(9, DEC); // DEBUG
+
 
 	lcd.backlight();
+	
+	Serial.println(10, DEC); // DEBUG
 }
 
 void loop()

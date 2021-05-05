@@ -10,9 +10,9 @@
 class SceneSwitcher : public Field
 {
 public:
-	SceneSwitcher(uint8_t);
+	SceneSwitcher(LiquidCrystal_I2C *, uint8_t);
 	// Update screen
-	void draw(bool) {};
+	void draw(bool){};
 	// Redraw everything of this field
 	void redraw(void);
 	// Clear the lcd
@@ -22,9 +22,9 @@ public:
 	// Underline or remove underline from field
 	void underline(bool);
 	// Save Field
-	void save(void) {};
+	void save(void){};
 	// Reset field to last save
-	void reset(void) {};
+	void reset(void){};
 
 private:
 	LcdLocation location;
@@ -34,13 +34,14 @@ private:
 	char symbol;
 };
 
-SceneSwitcher::SceneSwitcher(uint8_t column)
+SceneSwitcher::SceneSwitcher(LiquidCrystal_I2C *lcd, uint8_t column)
 {
 	this->underlined = false;
 	this->symbol = byte(3);
 	this->location.size = 1;
-	this->location.row	= 0;
+	this->location.row = 0;
 	this->location.column = column;
+	this->lcd = lcd;
 }
 
 uint8_t SceneSwitcher::action(int8_t change, bool _click)
@@ -50,11 +51,11 @@ uint8_t SceneSwitcher::action(int8_t change, bool _click)
 	case -1:
 		return 1;
 		break;
-	
+
 	case 1:
 		return 2;
 		break;
-	
+
 	default:
 		return 0;
 		break;
@@ -66,23 +67,28 @@ void SceneSwitcher::clear()
 	this->lcd->setCursor(this->location.column, this->location.row);
 
 	this->lcd->print(" ");
-	
+
 	this->underline(false);
 }
 
 void SceneSwitcher::redraw()
 {
+
 	this->lcd->setCursor(this->location.column, this->location.row);
+
 	this->underlined = !this->underlined;
-	
-	this->lcd->print(byte(3));
-	
+
+	this->lcd->print(this->symbol);
+
 	this->underline(!this->underlined);
 }
 
-void SceneSwitcher::underline(bool underline) {
+void SceneSwitcher::underline(bool underline)
+{
+
 	if (underline == this->underlined)
 	{
+
 		// Already in correct state
 		return;
 	}
