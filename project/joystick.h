@@ -5,6 +5,10 @@
 
 #include "Button.h"
 
+#ifndef CURRENTMILLIS
+#define CURRENTMILLIS millis()
+#endif
+
 // [0, TRIGGERBUFFER] and [1023 - TRIGGERBUFFER, 1023] will be read as joystick movement
 #define TRIGGERBUFFER 100 // TODO: Find a better name
 
@@ -163,13 +167,13 @@ bool Joystick::loop()
 	// Set neutral time
 	if (!(this->joystickState.raw & 0b1111))
 	{
-		this->lastNeutralTime = millis();
+		this->lastNeutralTime = CURRENTMILLIS;
 		this->repeatDelay = this->defaultRepeatDelay;
 	}
 
 	this->button.loop();
 
-	this->lastLoopTime = millis();
+	this->lastLoopTime = CURRENTMILLIS;
 
 	// Prevent recalculating each time getX/Y is called
 	this->update_action();
