@@ -2,6 +2,7 @@
 #define Field_h
 
 #include <Arduino.h>
+#include "Misc.h"
 
 // Parent class for all fields
 class Field
@@ -14,7 +15,7 @@ public:
 	// Clear the lcd
 	virtual void clear(void);
 	// Handle action (up/down, click)
-	virtual void action(int8_t, bool);
+	virtual uint8_t action(int8_t, bool);
 	// Underline or remove underline from field
 	virtual void underline(bool);
 	// Save Field

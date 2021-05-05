@@ -5,25 +5,16 @@
 
 #include <Arduino.h>
 #include <LiquidCrystal_I2C.h>
-#include "Field.h"
 
-union CounterLocation
-{
-	struct
-	{
-		byte row : 1;
-		byte column : 4;
-		byte size : 3;
-	};
-	byte raw;
-};
+#include "Field.h"
+#include "Misc.h"
 
 class Counter : public Field
 {
 public:
 	Counter(void);
 	Counter(LiquidCrystal_I2C *, uint8_t, uint8_t, int16_t, int16_t, char leadingChar);
-	void action(int8_t, bool);
+	uint8_t action(int8_t, bool);
 	void draw(bool);
 	void redraw(void);
 	void clear(void);
@@ -35,7 +26,7 @@ public:
 	void reset(void);
 
 private:
-	CounterLocation counterLocation;
+	LcdLocation location;
 	int16_t max;
 	int16_t value, saved_value;
 	LiquidCrystal_I2C *lcd;
@@ -51,7 +42,7 @@ private:
 
 Counter::Counter(void)
 {
-	// Do nothing
+	//this->underlined = false;
 }
 
 Counter::Counter(LiquidCrystal_I2C *lcd, uint8_t row, uint8_t column, int16_t max, int16_t value, char leadingChar)
@@ -63,16 +54,14 @@ void Counter::init(LiquidCrystal_I2C *lcd, uint8_t row, uint8_t column, int16_t 
 {
 	this->lcd = lcd;
 	this->leadingChar = leadingChar;
-	this->counterLocation.row = row;
-	this->counterLocation.column = column + (leadingChar == 0 ? 0 : 1);
-	this->counterLocation.size = this->getCounterSize(max);
+	this->location.row = row;
+	this->location.column = column + (leadingChar == 0 ? 0 : 1);
+	this->location.size = this->getCounterSize(max);
 	this->max = max;
 	this->value = value;
-	this->llen = 0;
-	this->underlined = false;
 }
 
-void Counter::action(int8_t change, bool click)
+uint8_t Counter::action(int8_t change, bool click)
 {
 	if (click)
 	{
@@ -82,6 +71,8 @@ void Counter::action(int8_t change, bool click)
 	{
 		this->update(change, true);
 	}
+	
+	return 0;
 }
 
 void Counter::save(void)
@@ -108,11 +99,11 @@ void Counter::draw(bool _force)
 	len = this->getCounterSize(this->value); // Prbly not worth calculating every time
 
 	// Set cursor to start of counter
-	this->lcd->setCursor(this->counterLocation.column, this->counterLocation.row);
+	this->lcd->setCursor(this->location.column, this->location.row);
 
 	// Pad left with zeros
 	// TODO: Find a way to write all '0' at once instead of a loop
-	for (uint8_t i = len; i < this->counterLocation.size; i++)
+	for (uint8_t i = len; i < this->location.size; i++)
 	{
 		this->lcd->print("0");
 	}
@@ -125,8 +116,8 @@ void Counter::draw(bool _force)
 
 void Counter::redraw()
 {
-	this->lcd->setCursor(this->counterLocation.column + (this->leadingChar == 0 ? 0 : -1),
-						 this->counterLocation.row);
+	this->lcd->setCursor(this->location.column + (this->leadingChar == 0 ? 0 : -1),
+						 this->location.row);
 	this->underlined = !this->underlined;
 
 	if (this->leadingChar)
@@ -142,12 +133,12 @@ void Counter::redraw()
 void Counter::clear()
 {
 	Serial.println("\tCounter::clear()"); // DEBUG
-	uint8_t start = this->counterLocation.column + (this->leadingChar == 0 ? 0 : -1);
-	uint8_t l = start + counterLocation.size;
+	uint8_t start = this->location.column + (this->leadingChar == 0 ? 0 : -1);
+	uint8_t l = start + location.size;
 
 	this->underline(false);
 
-	this->lcd->setCursor(start, this->counterLocation.row);
+	this->lcd->setCursor(start, this->location.row);
 
 	// TODO: Find a way to write all '0' at once instead of a loop
 	for (uint8_t i = 0; i < l; i++)
@@ -164,6 +155,7 @@ void Counter::update(int8_t value, bool relative)
 	}
 
 	this->value = (relative ? this->value + value : value) % this->max;
+
 	// Why does -1 % 4 not equal 3
 	if (this->value < 0)
 	{
@@ -183,11 +175,11 @@ void Counter::underline(bool underline)
 
 	char ch = underline ? byte(0) : ' ';
 
-	this->lcd->setCursor(this->counterLocation.column, this->counterLocation.row + 1);
+	this->lcd->setCursor(this->location.column, this->location.row + 1);
 
-	for (uint8_t i = 0; i < this->counterLocation.size; i++)
+	for (uint8_t i = 0; i < this->location.size; i++)
 	{
-		lcd->print(ch);
+		this->lcd->print(ch);
 	}
 
 	this->underlined = underline;

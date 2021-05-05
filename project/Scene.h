@@ -18,7 +18,7 @@ public:
 	// Add a new field to the scene
 	void add(Field *);
 	// Handle action
-	void action(int8_t, int8_t, bool);
+	uint8_t action(int8_t, int8_t, bool);
 	// Update idx of the current field absolute or relative
 	void updateIdx(int8_t, bool);
 	// Underline or remove underline from field
@@ -53,11 +53,12 @@ void Scene::add(Field *field)
 	this->length++;
 }
 
-void Scene::action(int8_t changeX, int8_t changeY, bool click)
+uint8_t Scene::action(int8_t changeX, int8_t changeY, bool click)
 {
+	uint8_t ret = 0;
 	if (changeY || click)
 	{
-		this->fields[this->idx]->action(changeY, click);
+		ret = this->fields[this->idx]->action(changeY, click);
 	}
 
 	// X-axis is used for switching between scenes
@@ -65,6 +66,8 @@ void Scene::action(int8_t changeX, int8_t changeY, bool click)
 	{
 		this->updateIdx(changeX, true);
 	}
+	
+	return ret;
 }
 
 void Scene::draw(bool force)

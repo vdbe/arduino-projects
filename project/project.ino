@@ -5,6 +5,7 @@
 #include "Clock.h"
 #include "Chars.h"
 #include "Scene.h"
+#include "SceneSwitcher.h"
 
 #define VRxPin A1
 #define VRyPin A0
@@ -17,9 +18,13 @@ Clock time1;
 Clock time2;
 Clock time3;
 
+SceneSwitcher sceneSwitcher(15);
+
 Scene scene;
 Scene scene2;
 Scene *scenes[2];
+
+uint8_t s;
 
 void setup()
 {
@@ -34,34 +39,39 @@ void setup()
 	// Load custom chars to lcd
 	load_chars(&lcd);
 
-	// Create both alarms
+	// Create Fields
 	time1.init(&lcd, 0, 0, byte(1));
 	time2.init(&lcd, 0, 7, byte(2));
 
-	// Add fields of alarms to scene
+	time3.init(&lcd, 0, 0, 'X');
+
+	// Add fields of alarms to scenes
 	scene.add(&time1.hours);
 	scene.add(&time1.minutes);
 
 	scene.add(&time2.hours);
 	scene.add(&time2.minutes);
-
-	// Setup the scene (redraw, underline)
-	scene.setup();
-
-	lcd.backlight();
-	scenes[0] = &scene;
-
-	time3.init(&lcd, 0, 0, 'X');
+	
+	scene.add(&sceneSwitcher);
 
 	scene2.add(&time3.hours);
 	scene2.add(&time3.minutes);
+
+	scene2.add(&sceneSwitcher);
+	
+	// Add scene object to scenes array
+	scenes[0] = &scene;
 	scenes[1] = &scene2;
+
+	// Setup the scene (redraw, underline)
+	s = 0;
+	scenes[s]->setup();
+
+	lcd.backlight();
 }
 
 void loop()
 {
-	static uint8_t s = 0;
-
 	// Update joystick values
 	joystick.loop();
 
