@@ -88,7 +88,6 @@ void SceneSwitcher::underline(bool underline)
 
 	if (underline == this->underlined)
 	{
-
 		// Already in correct state
 		return;
 	}

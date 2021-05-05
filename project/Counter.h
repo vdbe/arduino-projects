@@ -132,7 +132,6 @@ void Counter::redraw()
 
 void Counter::clear()
 {
-	Serial.println("\tCounter::clear()"); // DEBUG
 	uint8_t start = this->location.column + (this->leadingChar == 0 ? 0 : -1);
 	uint8_t l = start + location.size;
 
