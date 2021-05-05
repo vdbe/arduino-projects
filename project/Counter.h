@@ -9,6 +9,10 @@
 #include "Field.h"
 #include "Misc.h"
 
+#ifndef CURRENTMILLIS
+#define CURRENTMILLIS millis()
+#endif
+
 class Counter : public Field
 {
 public:
@@ -90,10 +94,10 @@ void Counter::reset(void)
 void Counter::draw(bool _force)
 {
 	/* // Not usefull since JoyStick minRepeatDelay 200ms is
-	if(!force && (millis() - this->lastDrawn) < MINDRAWTIME) {
+	if(!force && (CURRENTMILLIS - this->lastDrawn) < MINDRAWTIME) {
 		return;
 	}
-	this->lastDrawn = millis();
+	this->lastDrawn = CURRENTMILLIS;
 	*/
 
 	uint8_t len;

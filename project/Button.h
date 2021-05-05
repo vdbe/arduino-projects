@@ -3,6 +3,10 @@
 
 #include <Arduino.h>
 
+#ifndef CURRENTMILLIS
+#define CURRENTMILLIS millis()
+#endif
+
 class Button
 {
 public:
@@ -68,10 +72,10 @@ void Button::loop(void)
 	if (reading != this->lastButtonState)
 	{
 		// reset the debouncing timer
-		this->lastDebounceTime = millis();
+		this->lastDebounceTime = CURRENTMILLIS;
 	}
 
-	if ((millis() - this->lastDebounceTime) > this->debounceTime)
+	if ((CURRENTMILLIS - this->lastDebounceTime) > this->debounceTime)
 	{
 		// whatever the reading is at, it's been there for longer than the debounce
 		// delay, so take it as the actual current state:

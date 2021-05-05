@@ -1,11 +1,22 @@
 #include <Arduino.h>
 #include <LiquidCrystal_I2C.h>
 
+//#define currentMillis currentMillies	
+
+#ifndef CURRENTMILLIS
+#define CURRENTMILLIS millis()
+#endif
+
 #include "Joystick.h"
 #include "Clock.h"
 #include "Chars.h"
 #include "Scene.h"
 #include "SceneSwitcher.h"
+
+#ifdef CURRENTMILLIS
+#undef CURRENTMILLIS
+#define CURRENTMILLIS currentMillis
+#endif
 
 #define VRxPin A1
 #define VRyPin A0
@@ -92,7 +103,7 @@ void loop()
 	// Check if somthing happend
 	if(!joystick.getState().raw)
 	{
-		if(backLight && (currentMillis - lastActionTime) > SLEEPTIME * 1000) {
+		if(backLight && (CURRENTMILLIS - lastActionTime) > SLEEPTIME * 1000) {
 			backLight = false;
 			lcd.noBacklight();
 		}
@@ -105,7 +116,7 @@ void loop()
 		lcd.backlight();
 	}
 	
-	lastActionTime = currentMillis;
+	lastActionTime = CURRENTMILLIS;
 
 	uint8_t ret = scenes[sceneIdx]->action(joystick.getX(false), joystick.getY(true), joystick.isPressed());
 	
