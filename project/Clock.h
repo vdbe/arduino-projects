@@ -14,6 +14,8 @@ public:
 	Clock(void);
 	void init(LiquidCrystal_I2C *, uint8_t, uint8_t, char leadingChar);
 	void redraw(void);
+	
+	void set(int16_t hours, int16_t minutes);
 
 private:
 };
@@ -34,6 +36,12 @@ void Clock::redraw(void)
 {
 	this->hours.redraw();
 	this->minutes.redraw();
+}
+
+void Clock::set(int16_t hours, int16_t minutes)
+{
+	this->hours.saved_value = this->hours.value = hours;
+	this->minutes.saved_value = this->minutes.value = minutes;
 }
 
 #endif

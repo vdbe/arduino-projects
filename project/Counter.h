@@ -25,10 +25,11 @@ public:
 	void save(void);
 	void reset(void);
 
+	int16_t value, saved_value;
+
 private:
 	LcdLocation location;
 	int16_t max;
-	int16_t value, saved_value;
 	LiquidCrystal_I2C *lcd;
 	uint8_t getCounterSize(int16_t);
 	uint8_t llen;

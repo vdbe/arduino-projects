@@ -2,6 +2,8 @@
 #ifndef Misc_h
 #define Misc_h
 
+typedef void (*callback_function)(void); // type for conciseness
+
 union LcdLocation
 {
 	struct

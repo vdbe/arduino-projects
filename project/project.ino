@@ -16,14 +16,14 @@
 Joystick joystick;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-Clock time1;
-Clock time2;
-Clock time3;
+Clock onTime;
+Clock offTime;
+Clock rtcTime;
 
 SceneSwitcher sceneSwitcher(&lcd, 15);
 
 Scene scene;
-Scene scene2;
+Scene rtcScene;
 Scene *scenes[SCENECOUNT];
 
 int8_t sceneIdx;
@@ -42,25 +42,29 @@ void setup()
 	load_chars(&lcd);
 
 	// Create Fields
-	time1.init(&lcd, 0, 0, byte(1));
-	time2.init(&lcd, 0, 7, byte(2));
+	onTime.init(&lcd, 0, 0, byte(1));
+	offTime.init(&lcd, 0, 7, byte(2));
 
-	time3.init(&lcd, 0, 0, 'X');
+	rtcTime.init(&lcd, 0, 0, 'X');
 
 	// Add fields of alarms to scenes
-	scene.add(&time1.hours);
-	scene.add(&time1.minutes);
-	scene.add(&time2.hours);
-	scene.add(&time2.minutes);
+	scene.add(&onTime.hours);
+	scene.add(&onTime.minutes);
+	scene.add(&offTime.hours);
+	scene.add(&offTime.minutes);
 	scene.add(&sceneSwitcher);
 
-	scene2.add(&time3.hours);
-	scene2.add(&time3.minutes);
-	scene2.add(&sceneSwitcher);
+	rtcScene.add(&rtcTime.hours);
+	rtcScene.add(&rtcTime.minutes);
+	rtcScene.add(&sceneSwitcher);
+	
+	// Add callbacks to certain scenes
+	rtcScene.pre_setup_callback = setRtcScreenClock;
+	rtcScene.post_clear_callback = setRtcTime;
 
 	// Add scene object to scenes array
 	scenes[0] = &scene;
-	scenes[1] = &scene2;
+	scenes[1] = &rtcScene;
 
 	// Setup the scene (redraw, underline)
 	sceneIdx = 0;
@@ -109,4 +113,18 @@ void updateIdx(int8_t nidx, bool relative)
 	}
 
 	scenes[sceneIdx ]->setup();
+}
+
+void setRtcScreenClock()
+{
+	rtcTime.set(13, 37);
+}
+
+void setRtcTime()
+{
+	Serial.print("Time: ");
+	Serial.print(rtcTime.hours.saved_value, DEC);
+	Serial.print(":");
+	Serial.print(rtcTime.minutes.saved_value, DEC);
+	Serial.println("");
 }

@@ -27,21 +27,30 @@ public:
 	void setup(void);
 
 	int16_t idx;
+	callback_function pre_setup_callback;
+	callback_function post_clear_callback;
 
 private:
 	// TODO: Use Vec
 	Field *fields[15];
 	uint8_t length;
+	
 };
 
 Scene::Scene(void)
 {
 	this->length = 0;
 	this->idx = 0;
+	
+	this->pre_setup_callback = this->post_clear_callback = NULL;
 }
 
 void Scene::setup(void)
 {
+	if(this->pre_setup_callback != NULL)
+	{
+		this->pre_setup_callback();
+	}
 	this->underline(true); // Schould just set the underline bool instead of also drawing it, now its drawn by underline() and redraw()
 	this->redraw();
 }
@@ -51,7 +60,6 @@ void Scene::add(Field *field)
 	// TODO: Add length check
 	this->fields[this->length] = field;
 	this->length++;
-	
 }
 
 uint8_t Scene::action(int8_t changeX, int8_t changeY, bool click)
@@ -89,6 +97,11 @@ void Scene::clear()
 	for (uint8_t i = 0; i < this->length; i++)
 	{
 		this->fields[i]->clear();
+	}
+
+	if(this->post_clear_callback != NULL)
+	{
+		this->post_clear_callback();
 	}
 }
 
