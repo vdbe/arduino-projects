@@ -11,6 +11,7 @@
 #define VRyPin A0
 #define SWPin 5
 
+#define SLEEPTIME 10
 #define SCENECOUNT 2
 
 Joystick joystick;
@@ -27,6 +28,8 @@ Scene rtcScene;
 Scene *scenes[SCENECOUNT];
 
 int8_t sceneIdx;
+
+unsigned long lastActionTime, currentMillis;
 
 void setup()
 {
@@ -70,13 +73,39 @@ void setup()
 	sceneIdx = 0;
 	scenes[sceneIdx]->setup();
 
+	// Some extra setup stuff
 	lcd.backlight();
+	lastActionTime = 0;
 }
 
 void loop()
 {
+	static bool backLight = true;;
+
+	currentMillis = millis();
+
+	checkAlarms();
+
 	// Update joystick values
 	joystick.loop();
+	
+	// Check if somthing happend
+	if(!joystick.getState().raw)
+	{
+		if(backLight && (currentMillis - lastActionTime) > SLEEPTIME * 1000) {
+			backLight = false;
+			lcd.noBacklight();
+		}
+
+		return;
+	}
+
+	if(!backLight) {
+		backLight = true;
+		lcd.backlight();
+	}
+	
+	lastActionTime = currentMillis;
 
 	uint8_t ret = scenes[sceneIdx]->action(joystick.getX(false), joystick.getY(true), joystick.isPressed());
 	
@@ -113,6 +142,15 @@ void updateIdx(int8_t nidx, bool relative)
 	}
 
 	scenes[sceneIdx ]->setup();
+}
+
+
+void checkAlarms()
+{
+
+	// Alarm1
+
+	// Alarm2
 }
 
 void setRtcScreenClock()
