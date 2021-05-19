@@ -189,19 +189,7 @@ void Counter::underline(bool underline)
 // Private functions
 uint8_t Counter::getCounterSize(int16_t max)
 {
-	// TODO: Check what is faster this or log
-	for (uint8_t i = 1; i < 8; i++)
-	{
-		// NOTE: pow takes up 6% of program storage space
-		// TODO: write smaller pow if possible
-		if (max < (pow(10, i)))
-		{
-			return i;
-		}
-	}
-
-	// Should never be reached
-	return -1;
+	return floor(log10(max));
 }
 
 #endif

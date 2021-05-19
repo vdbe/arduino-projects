@@ -1,63 +1,12 @@
-#include <Arduino.h>
-#include <LiquidCrystal_I2C.h>
-
-#include <wire.h>
-#include <RTClib.h>
-
-//#define currentMillis currentMillies
-
-#ifndef CURRENTMILLIS
-#define CURRENTMILLIS millis()
-#endif
-
-#include "Joystick.h"
-#include "Clock.h"
-#include "Chars.h"
-#include "Scene.h"
-#include "SceneSwitcher.h"
-
-#ifdef CURRENTMILLIS
-#undef CURRENTMILLIS
-#define CURRENTMILLIS currentMillis
-#endif
-
-#define VRxPin A1
-#define VRyPin A0
-#define SWPin 5
-
-#define SLEEPTIME 10
-#define SCENECOUNT 2
-
-RTC_DS1307 rtc;
-
-bool ALARM1;
-bool ALARM2;
-
-Joystick joystick;
-LiquidCrystal_I2C lcd(0x27, 16, 2);
-
-Clock onTime;
-Clock offTime;
-Clock rtcTime;
-
-SceneSwitcher sceneSwitcher(&lcd, 15);
-
-Scene scene;
-Scene rtcScene;
-Scene *scenes[SCENECOUNT];
-
-int8_t sceneIdx;
-
-unsigned long lastActionTime, currentMillis;
-
-void setRtcScreenClock(void);
-void  setRtcTime(void);
+#include "project.h"
 
 void setup()
 {
-	Serial.begin(9600); // DEBUG
+	#if DEBUG==1
+	Serial.begin(9600);
+	#endif
 
-	joystick.attach(VRxPin, VRyPin, SWPin);
+	joystick.attach(VRXPIN, VRYPIN, SWPIN);
 
 	// Reset lcd
 	lcd.clear(); // No idea if clear and init are both needed
@@ -74,29 +23,8 @@ void setup()
 	ALARM2 = false;
 
 	rtcTime.init(&lcd, 0, 0, 'T');
-
-	// Add fields of alarms to scenes
-	scene.add(&onTime.hours);
-	scene.add(&onTime.minutes);
-	scene.add(&offTime.hours);
-	scene.add(&offTime.minutes);
-	scene.add(&sceneSwitcher);
-
-	rtcScene.add(&rtcTime.hours);
-	rtcScene.add(&rtcTime.minutes);
-	rtcScene.add(&sceneSwitcher);
-
-	// Add callbacks to certain scenes
-	rtcScene.pre_setup_callback = setRtcScreenClock;
-	rtcScene.post_clear_callback = setRtcTime;
-
-	// Add scene object to scenes array
-	scenes[0] = &scene;
-	scenes[1] = &rtcScene;
-
-	// Setup the scene (redraw, underline)
-	sceneIdx = 0;
-	scenes[sceneIdx]->setup();
+	
+	setup_scenes();
 
 	// Some extra setup stuff
 	lcd.backlight();
@@ -104,14 +32,18 @@ void setup()
 
 	if (!rtc.begin())
 	{
-		Serial.println("Couldn't find RTC");
-		while (1);
+		#if DEBUG==1
+		Serial.println("[ERROR] Couldn't find RTC");
+		exit(1);
+		#endif
 	}
 	if (!rtc.isrunning())
 	{
-		Serial.println("RTC is NOT running!");
+		#if DEBUG==1
+		Serial.println("[i] RTC is NOT running!");
+		#endif
 		// following line sets the RTC to the date & time this sketch was compiled
-		//rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+		rtc.adjust(DateTime(__DATE__, __TIME__));
 		// This line sets the RTC with an explicit date & time, for example to set
 		// January 21, 2014 at 3am you would call:
 		// rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
@@ -121,13 +53,82 @@ void setup()
 void loop()
 {
 	static bool backLight = true;
-
+	
 	currentMillis = millis();
 
+	#if DEBUG==1
+	static uint16_t cycles = 0;
+	static unsigned long lastStatTime = CURRENTMILLIS;
+
+	#if PARTCHECK==1
+	static unsigned long timeTotalAlarm = 0, timeTotalJoystickLoop = 0, timeTotalJoystickState = 0, timeTotalAction = 0, timeTotalRet = 0;
+	unsigned long timeCheckAlarm, timeCheckJoystickLoop, timeCheckJoystickState, timeCheckAction, timeCheckRet;
+	#endif
+
+	if (CURRENTMILLIS > (lastStatTime + (REPORTEVERY * 1000))) {
+		Serial.print("[STATS] ");
+		Serial.print(cycles, DEC);
+		Serial.print(" cycles\t");
+		Serial.print(cycles / REPORTEVERY, DEC);
+		Serial.print(" cycles/sec\n");
+
+		#if PARTCHECK==1
+		unsigned long int timeTotal;
+		timeTotal = (timeTotalAlarm / 10) + (timeTotalJoystickLoop / 10) + (timeTotalJoystickState / 10) + (timeTotalAction / 10) + (timeTotalRet / 10);
+
+		Serial.print("[PART] alarm:\t\t");
+		Serial.print(((float)timeTotalAlarm / timeTotal) * 10, DEC);
+		Serial.print("%\t");
+		Serial.print(timeTotalAlarm, DEC);
+
+		Serial.print("ms\n[PART] JS loop:\t\t");
+		Serial.print(((float)timeTotalJoystickLoop / timeTotal) * 10, DEC);
+		Serial.print("%\t");
+		Serial.print(timeTotalJoystickLoop, DEC);
+
+		Serial.print("ms\n[PART] JS state:\t");
+		Serial.print(((float)timeTotalJoystickState / timeTotal) * 10, DEC);
+		Serial.print("%\t");
+		Serial.print(timeTotalJoystickState, DEC);
+
+		Serial.print("ms\n[PART] action:\t\t");
+		Serial.print(((float)timeTotalAction / timeTotal) * 10, DEC);
+		Serial.print("%\t");
+		Serial.print(timeTotalAction, DEC);
+
+		Serial.print("ms\n[PART] ret:\t\t");
+		Serial.print(((float)timeTotalRet / timeTotal) * 10, DEC);
+		Serial.print("%\t");
+		Serial.print(timeTotalRet, DEC);
+		Serial.println("ms\n");
+	
+		timeTotalAlarm = timeTotalJoystickLoop = timeTotalJoystickState = timeTotalAction = timeTotalRet = 0;
+		#endif
+		cycles = 0;
+		currentMillis = millis();
+		lastStatTime = CURRENTMILLIS;
+	}
+
+	cycles++;
+	
+	#if PARTCHECK==1
+	currentMillis = millis();
+	#endif
+
+	#endif
+	
 	checkAlarms();
+
+	#if DEBUG==1 && PARTCHECK==1
+	timeCheckAlarm = millis();
+	#endif
 
 	// Update joystick values
 	joystick.loop();
+
+	#if DEBUG==1 && PARTCHECK==1
+	timeCheckJoystickLoop = millis();
+	#endif
 
 	// Check if somthing happend
 	if (!joystick.getState().raw)
@@ -138,34 +139,54 @@ void loop()
 			lcd.noBacklight();
 		}
 
-		return;
-	}
+		#if DEBUG==1 && PARTCHECK==1
+		timeCheckJoystickState = timeCheckAction = timeCheckRet = millis();
+		#endif
+	} else {
+		#if DEBUG==1 && PARTCHECK==1
+		timeCheckJoystickState = millis();
+		#endif
 
-	if (!backLight)
-	{
-		backLight = true;
-		lcd.backlight();
-	}
-
-	lastActionTime = CURRENTMILLIS;
-
-	uint8_t ret = scenes[sceneIdx]->action(joystick.getX(false), joystick.getY(true), joystick.isPressed());
-
-	if (ret)
-	{
-		switch (ret)
+		if (!backLight)
 		{
-		case 1:
-			updateIdx(-1, true);
-			break;
-		case 2:
-			updateIdx(1, true);
-			break;
+			backLight = true;
+			lcd.backlight();
+		}
 
-		default:
-			break;
+		lastActionTime = CURRENTMILLIS;
+
+		uint8_t ret = scenes[sceneIdx]->action(joystick.getX(false), joystick.getY(true), joystick.isPressed());
+
+		#if DEBUG==1 && PARTCHECK==1
+		timeCheckAction = millis();
+		#endif
+
+		if (ret)
+		{
+			switch (ret)
+			{
+			case 1:
+				updateIdx(-1, true);
+				break;
+			case 2:
+				updateIdx(1, true);
+				break;
+
+			default:
+				break;
+			}
 		}
 	}
+
+	#if DEBUG==1 && PARTCHECK==1
+	timeCheckRet = millis();
+	
+	timeTotalAlarm += timeCheckAlarm - currentMillis;
+	timeTotalJoystickLoop += timeCheckJoystickLoop - timeCheckAlarm;
+	timeTotalJoystickState += timeCheckJoystickState - timeCheckJoystickLoop;
+	timeTotalAction += timeCheckAction - timeCheckJoystickState;
+	timeTotalRet += timeCheckRet - timeCheckAction;
+	#endif
 }
 
 void updateIdx(int8_t nidx, bool relative)
@@ -201,7 +222,6 @@ void checkAlarms()
 	if(compareTime(now.hour(), now.minute(), onTime.hours.saved_value, onTime.minutes.saved_value, &ALARM1))
 	{
 		Serial.println("Turn on");
-
 	}
 
 	// Alarm2
