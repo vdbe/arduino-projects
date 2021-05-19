@@ -1,7 +1,10 @@
 #include <Arduino.h>
 #include <LiquidCrystal_I2C.h>
 
-//#define currentMillis currentMillies	
+#include <wire.h>
+#include <RTClib.h>
+
+//#define currentMillis currentMillies
 
 #ifndef CURRENTMILLIS
 #define CURRENTMILLIS millis()
@@ -25,6 +28,11 @@
 #define SLEEPTIME 10
 #define SCENECOUNT 2
 
+RTC_DS1307 rtc;
+
+bool ALARM1;
+bool ALARM2;
+
 Joystick joystick;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
@@ -42,6 +50,9 @@ int8_t sceneIdx;
 
 unsigned long lastActionTime, currentMillis;
 
+void setRtcScreenClock(void);
+void  setRtcTime(void);
+
 void setup()
 {
 	Serial.begin(9600); // DEBUG
@@ -58,8 +69,11 @@ void setup()
 	// Create Fields
 	onTime.init(&lcd, 0, 0, byte(1));
 	offTime.init(&lcd, 0, 7, byte(2));
+	
+	ALARM1 = false;
+	ALARM2 = false;
 
-	rtcTime.init(&lcd, 0, 0, 'X');
+	rtcTime.init(&lcd, 0, 0, 'T');
 
 	// Add fields of alarms to scenes
 	scene.add(&onTime.hours);
@@ -71,7 +85,7 @@ void setup()
 	rtcScene.add(&rtcTime.hours);
 	rtcScene.add(&rtcTime.minutes);
 	rtcScene.add(&sceneSwitcher);
-	
+
 	// Add callbacks to certain scenes
 	rtcScene.pre_setup_callback = setRtcScreenClock;
 	rtcScene.post_clear_callback = setRtcTime;
@@ -87,11 +101,26 @@ void setup()
 	// Some extra setup stuff
 	lcd.backlight();
 	lastActionTime = 0;
+
+	if (!rtc.begin())
+	{
+		Serial.println("Couldn't find RTC");
+		while (1);
+	}
+	if (!rtc.isrunning())
+	{
+		Serial.println("RTC is NOT running!");
+		// following line sets the RTC to the date & time this sketch was compiled
+		//rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+		// This line sets the RTC with an explicit date & time, for example to set
+		// January 21, 2014 at 3am you would call:
+		// rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
+	}
 }
 
 void loop()
 {
-	static bool backLight = true;;
+	static bool backLight = true;
 
 	currentMillis = millis();
 
@@ -99,11 +128,12 @@ void loop()
 
 	// Update joystick values
 	joystick.loop();
-	
+
 	// Check if somthing happend
-	if(!joystick.getState().raw)
+	if (!joystick.getState().raw)
 	{
-		if(backLight && (CURRENTMILLIS - lastActionTime) > SLEEPTIME * 1000) {
+		if (backLight && (CURRENTMILLIS - lastActionTime) > SLEEPTIME * 1000)
+		{
 			backLight = false;
 			lcd.noBacklight();
 		}
@@ -111,16 +141,18 @@ void loop()
 		return;
 	}
 
-	if(!backLight) {
+	if (!backLight)
+	{
 		backLight = true;
 		lcd.backlight();
 	}
-	
+
 	lastActionTime = CURRENTMILLIS;
 
 	uint8_t ret = scenes[sceneIdx]->action(joystick.getX(false), joystick.getY(true), joystick.isPressed());
-	
-	if (ret) {
+
+	if (ret)
+	{
 		switch (ret)
 		{
 		case 1:
@@ -129,7 +161,7 @@ void loop()
 		case 2:
 			updateIdx(1, true);
 			break;
-		
+
 		default:
 			break;
 		}
@@ -140,40 +172,78 @@ void updateIdx(int8_t nidx, bool relative)
 {
 	scenes[sceneIdx]->clear();
 
-	if(relative) {
+	if (relative)
+	{
 		sceneIdx += nidx;
-	} else {
+	}
+	else
+	{
 		sceneIdx = nidx;
 	}
 
-	if (sceneIdx < 0) {
-		sceneIdx = SCENECOUNT -1;
-	} else {
+	if (sceneIdx < 0)
+	{
+		sceneIdx = SCENECOUNT - 1;
+	}
+	else
+	{
 		sceneIdx %= SCENECOUNT;
 	}
 
-	scenes[sceneIdx ]->setup();
+	scenes[sceneIdx]->setup();
 }
-
 
 void checkAlarms()
 {
+	DateTime now = rtc.now();
 
 	// Alarm1
+	if(compareTime(now.hour(), now.minute(), onTime.hours.saved_value, onTime.minutes.saved_value, &ALARM1))
+	{
+		Serial.println("Turn on");
+
+	}
 
 	// Alarm2
+	if(compareTime(now.hour(), now.minute(), offTime.hours.saved_value, offTime.minutes.saved_value, &ALARM2))
+	{
+		Serial.println("Turn off");
+	}
+}
+
+bool compareTime(uint8_t hour1, uint8_t minute1, uint8_t hour2, uint8_t minute2, bool *triggerd)
+{
+	if (minute1 == minute2 && hour1 == hour2)
+	{
+		if(!*triggerd)
+		{
+			*triggerd = true;
+			return true;
+		} else {
+			return false;
+		}
+			
+	}
+
+	if (*triggerd) 
+	{
+		*triggerd = false;
+	}
+	
+	return false;
 }
 
 void setRtcScreenClock()
 {
-	rtcTime.set(13, 37);
+	DateTime now = rtc.now();
+
+	rtcTime.set(now.hour(), now.minute());
 }
 
 void setRtcTime()
 {
-	Serial.print("Time: ");
-	Serial.print(rtcTime.hours.saved_value, DEC);
-	Serial.print(":");
-	Serial.print(rtcTime.minutes.saved_value, DEC);
-	Serial.println("");
+	DateTime now = rtc.now();
+	
+	// NOTE: Maybe I schould set secs to 0
+	rtc.adjust(DateTime(now.year(), now.month(), now.day(), rtcTime.hours.saved_value, rtcTime.minutes.saved_value, now.second()));
 }
