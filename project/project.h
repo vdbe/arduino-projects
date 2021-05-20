@@ -6,26 +6,34 @@
 
 // Software config
 // time is in seconds
-#define DEBUG 1
-#define PARTCHECK 0
-#define REPORTEVERY 10
 
 #define SLEEPTIME 10
-#define CHECKALARMEVERY 1
-
 // Max: 60
 // TODO: Need a better name for this
-#define ALARMCHECKTIME 1
+#define CHECKALARMEVERY 1
+
 
 // Hardware config
 #define VRXPIN A1
 #define VRYPIN A0
 #define SWPIN 5
 
+// Debug config
+#define DEBUG 1
+#define REPORTEVERY 10
+// 0 - Nothing
+// 1 - void loop()
+// 2 - bool Joystick::loop()
+#define PARTCHECK 2
+
 
 #ifndef DEBUG
 #undef PARTCHECK
 #define PARTCHECK 0
+#endif
+
+#if PARTCHECK > 1
+bool report = false;
 #endif
 
 unsigned long currentMillis;

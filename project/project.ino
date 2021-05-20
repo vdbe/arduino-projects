@@ -18,12 +18,12 @@ void setup()
 	// Create Fields
 	onTime.init(&lcd, 0, 0, byte(1));
 	offTime.init(&lcd, 0, 7, byte(2));
-	
+
 	ALARM1 = false;
 	ALARM2 = false;
 
 	rtcTime.init(&lcd, 0, 0, 'T');
-	
+
 	setup_scenes();
 
 	// Some extra setup stuff
@@ -49,8 +49,8 @@ void setup()
 void loop()
 {
 	static bool backLight = true;
-	unsigned long lastAlarmCheckTime = 0;
-	
+	static unsigned long lastAlarmCheckTime = 0;
+
 	currentMillis = millis();
 
 	#if DEBUG==1
@@ -98,8 +98,10 @@ void loop()
 		Serial.print("%\t");
 		Serial.print(timeTotalRet, DEC);
 		Serial.println("ms\n");
-	
+
 		timeTotalAlarm = timeTotalJoystickLoop = timeTotalJoystickState = timeTotalAction = timeTotalRet = 0;
+		#elif PARTCHECK > 1
+		report = true;
 		#endif
 		cycles = 0;
 		currentMillis = millis();
@@ -107,14 +109,15 @@ void loop()
 	}
 
 	cycles++;
-	
+
 	#if PARTCHECK==1
 	currentMillis = millis();
 	#endif
 
 	#endif
-	
-	if(CURRENTMILLIS > (lastAlarmCheckTime + CHECKALARMEVERY * 1000))
+
+	//if (CURRENTMILLIS > (lastStatTime + (REPORTEVERY * 1000))) {
+	if(CURRENTMILLIS > (lastAlarmCheckTime + (CHECKALARMEVERY * 1000)))
 	{
 		lastAlarmCheckTime = CURRENTMILLIS;
 		checkAlarms();
@@ -181,7 +184,7 @@ void loop()
 
 	#if DEBUG==1 && PARTCHECK==1
 	timeCheckRet = millis();
-	
+
 	timeTotalAlarm += timeCheckAlarm - currentMillis;
 	timeTotalJoystickLoop += timeCheckJoystickLoop - timeCheckAlarm;
 	timeTotalJoystickState += timeCheckJoystickState - timeCheckJoystickLoop;
@@ -190,36 +193,11 @@ void loop()
 	#endif
 }
 
-void updateIdx(int8_t nidx, bool relative)
-{
-	scenes[sceneIdx]->clear();
-
-	if (relative)
-	{
-		sceneIdx += nidx;
-	}
-	else
-	{
-		sceneIdx = nidx;
-	}
-
-	if (sceneIdx < 0)
-	{
-		sceneIdx = SCENECOUNT - 1;
-	}
-	else
-	{
-		sceneIdx %= SCENECOUNT;
-	}
-
-	scenes[sceneIdx]->setup();
-}
-
 void checkAlarms()
 {
 	uint8_t hour, minute;
 	DateTime now = rtc.now();
-	
+
 	hour = now.hour();
 	minute = now.minute();
 
@@ -247,15 +225,40 @@ bool compareTime(uint8_t hour1, uint8_t minute1, uint8_t hour2, uint8_t minute2,
 		} else {
 			return false;
 		}
-			
+
 	}
 
-	if (*triggerd) 
+	if (*triggerd)
 	{
 		*triggerd = false;
 	}
-	
+
 	return false;
+}
+
+void updateIdx(int8_t nidx, bool relative)
+{
+	scenes[sceneIdx]->clear();
+
+	if (relative)
+	{
+		sceneIdx += nidx;
+	}
+	else
+	{
+		sceneIdx = nidx;
+	}
+
+	if (sceneIdx < 0)
+	{
+		sceneIdx = SCENECOUNT - 1;
+	}
+	else
+	{
+		sceneIdx %= SCENECOUNT;
+	}
+
+	scenes[sceneIdx]->setup();
 }
 
 void setRtcScreenClock()
@@ -268,7 +271,7 @@ void setRtcScreenClock()
 void setRtcTime()
 {
 	DateTime now = rtc.now();
-	
+
 	// NOTE: Maybe I schould set secs to 0
 	rtc.adjust(DateTime(now.year(), now.month(), now.day(), rtcTime.hours.saved_value, rtcTime.minutes.saved_value, now.second()));
 }
