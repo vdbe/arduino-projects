@@ -14,18 +14,14 @@ public:
 	Button(uint8_t);
 	void attach(uint8_t);
 	bool getState(void);
-	void loop(void);
 	bool isPressed(void);
+	void loop(void);
 	void setDebounceTime(uint8_t);
 
 private:
-	uint8_t buttonPin;
-
-	uint8_t debounceTime;
-
-	bool lastButtonState, buttonState;
+	bool lastButtonState, buttonState, pressed;
+	uint8_t buttonPin, debounceTime;
 	uint32_t lastDebounceTime;
-	bool pressed;
 };
 
 Button::Button(void)

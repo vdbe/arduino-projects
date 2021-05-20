@@ -14,7 +14,6 @@ public:
 	Clock(void);
 	void init(LiquidCrystal_I2C *, uint8_t, uint8_t, char leadingChar);
 	void redraw(void);
-	
 	void set(int16_t hours, int16_t minutes);
 
 private:

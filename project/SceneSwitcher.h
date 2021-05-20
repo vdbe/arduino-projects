@@ -11,27 +11,27 @@ class SceneSwitcher : public Field
 {
 public:
 	SceneSwitcher(LiquidCrystal_I2C *, uint8_t);
+	// Handle action (up/down, click)
+	uint8_t action(int8_t, bool);
+	// Clear the lcd
+	void clear(void);
 	// Update screen
 	void draw(bool){};
 	// Redraw everything of this field
 	void redraw(void);
-	// Clear the lcd
-	void clear(void);
-	// Handle action (up/down, click)
-	uint8_t action(int8_t, bool);
-	// Underline or remove underline from field
-	void underline(bool);
-	// Save Field
-	void save(void){};
 	// Reset field to last save
 	void reset(void){};
+	// Save Field
+	void save(void){};
+	// Underline or remove underline from field
+	void underline(bool);
 
 private:
-	LcdLocation location;
-	LiquidCrystal_I2C *lcd;
 	bool underlined;
-	uint8_t column;
 	char symbol;
+	uint8_t column;
+	LiquidCrystal_I2C *lcd;
+	LcdLocation location;
 };
 
 SceneSwitcher::SceneSwitcher(LiquidCrystal_I2C *lcd, uint8_t column)

@@ -16,54 +16,40 @@
 class Counter : public Field
 {
 public:
+	int16_t value, saved_value;
+
 	Counter(void);
 	Counter(LiquidCrystal_I2C *, uint8_t, uint8_t, int16_t, int16_t, char leadingChar);
 	uint8_t action(int8_t, bool);
-	void draw(bool);
-	void redraw(void);
 	void clear(void);
+	void draw(bool);
 	void init(LiquidCrystal_I2C *, uint8_t, uint8_t, int16_t, int16_t, char leadingChar);
+	void redraw(void);
+	void reset(void);
+	void save(void);
 	void update(int8_t, bool);
 	void underline(bool);
 
-	void save(void);
-	void reset(void);
-
-	int16_t value, saved_value;
-
 private:
-	LcdLocation location;
-	int16_t max;
-	LiquidCrystal_I2C *lcd;
-	uint8_t getCounterSize(int16_t);
-	uint8_t llen;
 	bool underlined, needDraw;
 	char leadingChar;
-
+	uint8_t getCounterSize(int16_t);
+	int16_t max;
 	uint32_t lastDrawn;
+	LcdLocation location;
+	LiquidCrystal_I2C *lcd;
 };
 
 // Public funtions
 
 Counter::Counter(void)
 {
-	//this->underlined = false;
+	// Do nothing
 }
 
 Counter::Counter(LiquidCrystal_I2C *lcd, uint8_t row, uint8_t column, int16_t max, int16_t value, char leadingChar)
 {
 	this->init(lcd, row, column, max, value, leadingChar);
-}
-
-void Counter::init(LiquidCrystal_I2C *lcd, uint8_t row, uint8_t column, int16_t max, int16_t value, char leadingChar)
-{
-	this->lcd = lcd;
-	this->leadingChar = leadingChar;
-	this->location.row = row;
-	this->location.column = column + (leadingChar == 0 ? 0 : 1);
-	this->location.size = this->getCounterSize(max);
-	this->max = max;
-	this->value = value;
 }
 
 uint8_t Counter::action(int8_t change, bool click)
@@ -76,19 +62,24 @@ uint8_t Counter::action(int8_t change, bool click)
 	{
 		this->update(change, true);
 	}
-	
+
 	return 0;
 }
 
-void Counter::save(void)
+void Counter::clear()
 {
-	this->saved_value = this->value;
-}
+	uint8_t start = this->location.column + (this->leadingChar == 0 ? 0 : -1);
+	uint8_t l = start + location.size;
 
-void Counter::reset(void)
-{
-	this->value = this->saved_value;
-	this->draw(true);
+	this->underline(false);
+
+	this->lcd->setCursor(start, this->location.row);
+
+	// TODO: Find a way to write all '0' at once instead of a loop
+	for (uint8_t i = 0; i < l; i++)
+	{
+		this->lcd->print(" ");
+	}
 }
 
 void Counter::draw(bool _force)
@@ -115,8 +106,23 @@ void Counter::draw(bool _force)
 
 	// Write the value
 	this->lcd->print(this->value);
+}
 
-	//this->llen = len
+void Counter::init(LiquidCrystal_I2C *lcd, uint8_t row, uint8_t column, int16_t max, int16_t value, char leadingChar)
+{
+	this->lcd = lcd;
+	this->leadingChar = leadingChar;
+	this->location.row = row;
+	this->location.column = column + (leadingChar == 0 ? 0 : 1);
+	this->location.size = this->getCounterSize(max);
+	this->max = max;
+	this->value = value;
+}
+
+void Counter::reset(void)
+{
+	this->value = this->saved_value;
+	this->draw(true);
 }
 
 void Counter::redraw()
@@ -132,20 +138,9 @@ void Counter::redraw()
 	this->draw(true);
 }
 
-void Counter::clear()
+void Counter::save(void)
 {
-	uint8_t start = this->location.column + (this->leadingChar == 0 ? 0 : -1);
-	uint8_t l = start + location.size;
-
-	this->underline(false);
-
-	this->lcd->setCursor(start, this->location.row);
-
-	// TODO: Find a way to write all '0' at once instead of a loop
-	for (uint8_t i = 0; i < l; i++)
-	{
-		this->lcd->print(" ");
-	}
+	this->saved_value = this->value;
 }
 
 void Counter::update(int8_t value, bool relative)
