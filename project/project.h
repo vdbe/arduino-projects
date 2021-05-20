@@ -6,12 +6,10 @@
 
 // Software config
 // time is in seconds
-
 #define SLEEPTIME 10
 // Max: 60
 // TODO: Need a better name for this
 #define CHECKALARMEVERY 1
-
 
 // Hardware config
 #define VRXPIN A1
@@ -21,11 +19,11 @@
 // Debug config
 #define DEBUG 1
 #define REPORTEVERY 10
-// 0 - Nothing
-// 1 - void loop()
-// 2 - bool Joystick::loop()
+//  0 - Nothing
+//  1 - void loop()
+//  2 - bool Joystick::loop()
+// >2 - Only void setup();
 #define PARTCHECK 2
-
 
 #ifndef DEBUG
 #undef PARTCHECK
@@ -93,7 +91,17 @@ void updateIdx(int8_t, bool);
 
 void setup_scenes()
 {
-	// Add fields of alarms to scenes
+	// Create Fields
+	onTime.init(&lcd, 0, 0, byte(1));
+	offTime.init(&lcd, 0, 7, byte(2));
+
+	rtcTime.init(&lcd, 0, 0, 'T');
+
+	// Setup Scene objects
+	scene.init(5);
+	rtcScene.init(3);
+
+	// Add fields to scenes
 	scene.add(&onTime.hours);
 	scene.add(&onTime.minutes);
 	scene.add(&offTime.hours);

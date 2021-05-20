@@ -3,47 +3,109 @@
 void setup()
 {
 	#if DEBUG==1
+	unsigned long timeSetupStart;
+	
+	#ifdef PARTCHECK
+	unsigned long timeCheckJoystick, timeCheckLcd, timeCheckChars, timeCheckScenes, timeCheckBacklight, timeCheckVar, timeCheckRtc;
+	#endif
+
 	Serial.begin(9600);
+	Serial.println("[i] Start setup");
+	
+	timeSetupStart = millis();
 	#endif
 
 	joystick.attach(VRXPIN, VRYPIN, SWPIN);
+	
+	#ifdef PARTCHECK
+	timeCheckJoystick = millis();
+	#endif
 
 	// Reset lcd
-	lcd.clear(); // No idea if clear and init are both needed
 	lcd.init();
+
+	#ifdef PARTCHECK
+	timeCheckLcd = millis();
+	#endif
 
 	// Load custom chars to lcd
 	load_chars(&lcd);
 
-	// Create Fields
-	onTime.init(&lcd, 0, 0, byte(1));
-	offTime.init(&lcd, 0, 7, byte(2));
+	#ifdef PARTCHECK
+	timeCheckChars = millis();
+	#endif
+
+	setup_scenes();
+
+	#ifdef PARTCHECK
+	timeCheckScenes = millis();
+	#endif
+
+	lcd.backlight();
+
+	#ifdef PARTCHECK
+	timeCheckBacklight = millis();
+	#endif
 
 	ALARM1 = false;
 	ALARM2 = false;
 
-	rtcTime.init(&lcd, 0, 0, 'T');
-
-	setup_scenes();
-
-	// Some extra setup stuff
-	lcd.backlight();
 	lastActionTime = 0;
 
+	#ifdef PARTCHECK
+	timeCheckVar = millis();
+	#endif
+
+	// Setup RTC
 	if (!rtc.begin())
 	{
 		#if DEBUG==1
-		Serial.println("[ERROR] Couldn't find RTC");
-		exit(1);
+		Serial.println("[!] Couldn't find RTC");
 		#endif
+		exit(2);
 	}
+
 	if (!rtc.isrunning())
 	{
 		#if DEBUG==1
-		Serial.println("[i] RTC is NOT running!");
+		Serial.println("[i] RTC was not running!");
 		#endif
 		rtc.adjust(DateTime(__DATE__, __TIME__));
 	}
+
+	#if DEBUG==1
+	#ifdef PARTCHECK
+	timeCheckRtc = millis();
+	#endif
+
+	Serial.print("[i] End setup (took ");
+	Serial.print(millis() - timeSetupStart, DEC);
+	Serial.println("ms)");
+
+	#ifdef PARTCHECK
+	Serial.print("[PART] JS:\t\t");
+	Serial.print(timeCheckJoystick - timeSetupStart, DEC);
+	
+	Serial.print("ms\n[PART] lcd:\t\t");
+	Serial.print(timeCheckLcd - timeCheckJoystick, DEC);
+
+	Serial.print("ms\n[PART] chars:\t\t");
+	Serial.print(timeCheckChars - timeCheckLcd, DEC);
+	
+	Serial.print("ms\n[PART] scenes:\t\t");
+	Serial.print(timeCheckScenes - timeCheckChars, DEC);
+
+	Serial.print("ms\n[PART] backlight:\t");
+	Serial.print(timeCheckBacklight - timeCheckScenes, DEC);
+	
+	Serial.print("ms\n[PART] var:\t\t");
+	Serial.print(timeCheckVar - timeCheckBacklight, DEC);
+	
+	Serial.print("ms\n[PART] rtc:\t\t");
+	Serial.print(timeCheckRtc - timeCheckVar, DEC);
+	Serial.print("ms\n\n");
+	#endif
+	#endif
 }
 
 void loop()

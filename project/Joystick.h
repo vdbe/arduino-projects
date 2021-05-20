@@ -181,7 +181,7 @@ bool Joystick::loop()
 		Serial.print("%\t");
 		Serial.print((timeTotalAnalog1 + timeTotalAnalog2), DEC);
 
-		Serial.print("\n[PART] parse inp\t");
+		Serial.print("ms\n[PART] parse inp\t");
 		Serial.print(((float)(timeTotalParse1 + timeTotalParse2) / timeTotal) * 10, DEC);
 		Serial.print("%\t");
 		Serial.print((timeTotalParse1 + timeTotalParse2), DEC);
@@ -205,7 +205,7 @@ bool Joystick::loop()
 		Serial.print(((float)timeTotalNeutral / timeTotal) * 10, DEC);
 		Serial.print("%\t");
 		Serial.print(timeTotalNeutral, DEC);
-		Serial.print("\n\n");
+		Serial.print("ms\n\n");
 
 		timeTotalSetup = timeTotalAnalog1 = timeTotalParse1 = timeTotalAnalog2 = timeTotalParse2 = timeTotalNeutral = timeTotalButton = timeTotalUAction = 0;
 		report = false;

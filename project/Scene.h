@@ -13,6 +13,8 @@ public:
 	callback_function post_clear_callback;
 
 	Scene(void);
+	// Destructor
+	~Scene();
 	// Handle action
 	uint8_t action(int8_t, int8_t, bool);
 	// Add a new field to the scene
@@ -21,6 +23,8 @@ public:
 	void clear(void);
 	// Draw the scene with idx ´this->idx´
 	void draw(bool);
+	// Init the scene: set max Fields
+	void init(uint8_t);
 	// Redraw every field in the scene
 	void redraw(void);
 	// Setup the Scene (redrawing, setting idx to 0)
@@ -32,16 +36,21 @@ public:
 
 private:
 	// TODO: Use Vec
-	Field *fields[15];
+	Field **fields;
 	uint8_t length;
 };
 
 Scene::Scene(void)
 {
-	this->length = 0;
+	this->fields = NULL;
 	this->idx = 0;
-
+	this->length = 0;
 	this->pre_setup_callback = this->post_clear_callback = NULL;
+}
+
+Scene::~Scene(void)
+{
+	free(this->fields);
 }
 
 uint8_t Scene::action(int8_t changeX, int8_t changeY, bool click)
@@ -85,6 +94,20 @@ void Scene::clear()
 void Scene::draw(bool force)
 {
 	this->fields[this->idx]->draw(force);
+}
+
+void Scene::init(uint8_t size)
+{
+	this->fields = (Field**) malloc(size * sizeof(Field*));
+
+	if(this->fields == NULL)
+	{
+		#ifdef DEBUG
+		Serial.println("[!] Couldn't allocate memory for fields array");
+		delay(100);
+		#endif
+		exit(1);
+	}
 }
 
 void Scene::redraw()
