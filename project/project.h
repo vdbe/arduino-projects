@@ -7,10 +7,11 @@
 // Software config
 // time is in seconds
 #define DEBUG 1
-#define PARTCHECK 1
+#define PARTCHECK 0
 #define REPORTEVERY 10
 
 #define SLEEPTIME 10
+#define CHECKALARMEVERY 1
 
 // Max: 60
 // TODO: Need a better name for this

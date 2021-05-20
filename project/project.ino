@@ -42,17 +42,14 @@ void setup()
 		#if DEBUG==1
 		Serial.println("[i] RTC is NOT running!");
 		#endif
-		// following line sets the RTC to the date & time this sketch was compiled
 		rtc.adjust(DateTime(__DATE__, __TIME__));
-		// This line sets the RTC with an explicit date & time, for example to set
-		// January 21, 2014 at 3am you would call:
-		// rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
 	}
 }
 
 void loop()
 {
 	static bool backLight = true;
+	unsigned long lastAlarmCheckTime = 0;
 	
 	currentMillis = millis();
 
@@ -117,7 +114,11 @@ void loop()
 
 	#endif
 	
-	checkAlarms();
+	if(CURRENTMILLIS > (lastAlarmCheckTime + CHECKALARMEVERY * 1000))
+	{
+		lastAlarmCheckTime = CURRENTMILLIS;
+		checkAlarms();
+	}
 
 	#if DEBUG==1 && PARTCHECK==1
 	timeCheckAlarm = millis();
@@ -216,16 +217,20 @@ void updateIdx(int8_t nidx, bool relative)
 
 void checkAlarms()
 {
+	uint8_t hour, minute;
 	DateTime now = rtc.now();
+	
+	hour = now.hour();
+	minute = now.minute();
 
 	// Alarm1
-	if(compareTime(now.hour(), now.minute(), onTime.hours.saved_value, onTime.minutes.saved_value, &ALARM1))
+	if(compareTime(hour, minute, onTime.hours.saved_value, onTime.minutes.saved_value, &ALARM1))
 	{
 		Serial.println("Turn on");
 	}
 
 	// Alarm2
-	if(compareTime(now.hour(), now.minute(), offTime.hours.saved_value, offTime.minutes.saved_value, &ALARM2))
+	if(compareTime(hour, minute, offTime.hours.saved_value, offTime.minutes.saved_value, &ALARM2))
 	{
 		Serial.println("Turn off");
 	}

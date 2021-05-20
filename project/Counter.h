@@ -178,7 +178,7 @@ void Counter::underline(bool underline)
 
 	this->lcd->setCursor(this->location.column, this->location.row + 1);
 
-	for (uint8_t i = 0; i < this->location.size; i++)
+	for (uint8_t i = 0; i <= this->location.size; i++)
 	{
 		this->lcd->print(ch);
 	}
