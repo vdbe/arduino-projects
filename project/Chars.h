@@ -1,5 +1,6 @@
 #ifndef Chars_h
 #define Chars_h
+
 #include <LiquidCrystal_I2C.h>
 
 void load_chars(LiquidCrystal_I2C *lcd)

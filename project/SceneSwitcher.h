@@ -16,13 +16,13 @@ public:
 	// Clear the lcd
 	void clear(void);
 	// Update screen
-	void draw(bool){};
+	void draw(bool) {};
 	// Redraw everything of this field
 	void redraw(void);
 	// Reset field to last save
-	void reset(void){};
+	void reset(void) {};
 	// Save Field
-	void save(void){};
+	void save(void) {};
 	// Underline or remove underline from field
 	void underline(bool);
 

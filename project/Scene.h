@@ -35,7 +35,6 @@ public:
 	void underline(bool);
 
 private:
-	// TODO: Use Vec
 	Field **fields;
 	uint8_t length;
 };
@@ -56,6 +55,7 @@ Scene::~Scene(void)
 uint8_t Scene::action(int8_t changeX, int8_t changeY, bool click)
 {
 	uint8_t ret = 0;
+	
 	if (changeY || click)
 	{
 		ret = this->fields[this->idx]->action(changeY, click);
@@ -106,6 +106,7 @@ void Scene::init(uint8_t size)
 		Serial.println("[!] Couldn't allocate memory for fields array");
 		delay(100);
 		#endif
+
 		exit(1);
 	}
 }
@@ -124,6 +125,7 @@ void Scene::setup(void)
 	{
 		this->pre_setup_callback();
 	}
+	
 	this->redraw();
 	this->underline(true);
 }

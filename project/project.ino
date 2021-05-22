@@ -266,14 +266,32 @@ void checkAlarms()
 	// Alarm1
 	if(compareTime(hour, minute, onTime.hours.saved_value, onTime.minutes.saved_value, &ALARM1))
 	{
-		Serial.println("Turn on");
+		#ifdef DEBUG
+		Serial.println("[i] Alarm1");
+		#endif
+		
+		moveStepperMotor(STEPPERSTEPS);
 	}
 
 	// Alarm2
 	if(compareTime(hour, minute, offTime.hours.saved_value, offTime.minutes.saved_value, &ALARM2))
 	{
-		Serial.println("Turn off");
+		#ifdef DEBUG
+		Serial.println("[i] Alarm2");
+		#endif
+
+		moveStepperMotor(-STEPPERSTEPS);
 	}
+}
+
+void moveStepperMotor(int32_t steps)
+{
+	StepperMotor sm;
+	unsigned char coilPins1[] = { COIL0, COIL1, COIL2, COIL3 };
+
+	sm.attach(coilPins1);
+	
+	sm.setSteps(steps);
 }
 
 bool compareTime(uint8_t hour1, uint8_t minute1, uint8_t hour2, uint8_t minute2, bool *triggerd)

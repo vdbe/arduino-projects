@@ -152,7 +152,7 @@ void Counter::update(int8_t value, bool relative)
 
 	this->value = (relative ? this->value + value : value) % this->max;
 
-	// Why does -1 % 4 not equal 3
+	// Why does -1 % 4 not equal 3?
 	if (this->value < 0)
 	{
 		this->value += this->max;

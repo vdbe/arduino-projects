@@ -12,22 +12,31 @@
 #define CHECKALARMEVERY 1
 
 // Hardware config
+// Joystick
 #define VRXPIN A1
 #define VRYPIN A0
 #define SWPIN 5
 
+// StepperMotor
+#define STEPPERDELAY 1
+#define STEPPERSTEPS 1024
+#define COIL0 8
+#define COIL1 9
+#define COIL2 10
+#define COIL3 11
+
 // Debug config
-#define DEBUG 1
+#define DEBUG 0
 #define REPORTEVERY 10
 //  0 - Nothing
 //  1 - void loop()
 //  2 - bool Joystick::loop()
 // >2 - Only void setup();
-#define PARTCHECK 2
+#define PARTCHECK 1
 
-#ifndef DEBUG
+
+#if DEBUG==0
 #undef PARTCHECK
-#define PARTCHECK 0
 #endif
 
 #if PARTCHECK > 1
@@ -49,6 +58,7 @@ unsigned long currentMillis;
 #include "Chars.h"
 #include "Scene.h"
 #include "SceneSwitcher.h"
+#include "StepperMotor.h"
 
 #ifdef CURRENTMILLIS
 #undef CURRENTMILLIS
@@ -83,6 +93,7 @@ unsigned long lastActionTime;
 void checkAlarms(void);
 bool compareTime(uint8_t, uint8_t, uint8_t, uint8_t, bool *);
 void loop(void);
+void moveStepperMotor(int32_t steps);
 void setup(void);
 void setup_scenes(void);
 void setRtcScreenClock(void);

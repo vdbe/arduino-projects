@@ -86,11 +86,11 @@ void Button::loop(void)
 			{
 				// save the reading. Next time through the loop, it'll be the lastButtonState:
 				this->lastButtonState = reading;
-				this->pressed = 1;
+				this->pressed = true;
 				return;
 			}
 		}
-		this->pressed = 0;
+		this->pressed = false;
 	}
 
 	// save the reading. Next time through the loop, it'll be the lastButtonState:

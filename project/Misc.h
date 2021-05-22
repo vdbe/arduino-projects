@@ -2,7 +2,7 @@
 #ifndef Misc_h
 #define Misc_h
 
-typedef void (*callback_function)(void); // type for conciseness
+typedef void (*callback_function)(void);
 
 union LcdLocation
 {
